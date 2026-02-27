@@ -40,6 +40,15 @@ class AppSnackbar {
         break;
     }
 
+    final mediaQuery = Get.context != null ? MediaQuery.of(Get.context!) : null;
+    final topInset = mediaQuery?.padding.top ?? 0.0;
+    final bottomInset = mediaQuery?.padding.bottom ?? 0.0;
+    final safeTopMargin = topInset + kToolbarHeight + 8;
+    final safeBottomMargin = bottomInset + 8;
+    final EdgeInsets margin = position == SnackPosition.TOP
+        ? EdgeInsets.fromLTRB(16, safeTopMargin, 16, 16)
+        : EdgeInsets.fromLTRB(16, 16, 16, safeBottomMargin);
+
     Get.snackbar(
       title.toUpperCase(),
       message,
@@ -48,7 +57,7 @@ class AppSnackbar {
       colorText: textColor,
       icon: Icon(icon, color: textColor),
       duration: duration,
-      margin: const EdgeInsets.all(16),
+      margin: margin,
       borderRadius: 0,
       borderWidth: 1,
       borderColor: backgroundColor,
@@ -69,6 +78,7 @@ class AppSnackbar {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       shouldIconPulse: false,
+      snackStyle: SnackStyle.FLOATING,
       mainButton: TextButton(
         onPressed: () => Get.back(),
         child: Text(

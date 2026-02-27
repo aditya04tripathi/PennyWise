@@ -54,8 +54,8 @@ class NotificationService extends GetxService {
           'pennywise_alerts',
           'PennyWise Alerts',
           channelDescription: 'Notifications for budget and transaction alerts',
-          importance: Importance.max,
-          priority: Priority.high,
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
         );
 
     const DarwinNotificationDetails iOSPlatformChannelSpecifics =

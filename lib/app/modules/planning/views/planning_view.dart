@@ -6,6 +6,7 @@ import '../controllers/planning_controller.dart';
 import '../../../../core/values/colors.dart';
 import '../../../../core/values/spacing.dart';
 import '../../../../app/routes/app_routes.dart';
+import '../../main_navigation/views/responsive_wrapper.dart';
 
 class PlanningView extends GetView<PlanningController> {
   const PlanningView({super.key});
@@ -25,38 +26,40 @@ class PlanningView extends GetView<PlanningController> {
         ],
       ),
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            controller.onInit();
-            await Future.delayed(const Duration(milliseconds: 500));
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: AppSpacing.pM,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionHeader('Monthly Overview', theme),
-                AppSpacing.vM,
-                _buildMonthlySummary(theme),
-                AppSpacing.vXL,
-                _buildSectionHeader('Spending Trend', theme),
-                AppSpacing.vM,
-                _buildSpendingTrends(theme),
-                AppSpacing.vXL,
-                _buildHeaderWithAction(
-                  'Spending by Category',
-                  'Add Category',
-                  () => Get.toNamed(AppRoutes.ADD_CATEGORY),
-                  theme,
-                ),
-                AppSpacing.vM,
-                _buildCategorySpendingList(theme),
-                AppSpacing.vXL,
-                _buildSectionHeader('Recurring Transactions', theme),
-                AppSpacing.vM,
-                _buildRecurringList(theme),
-              ],
+        child: ResponsiveWrapper(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              controller.onInit();
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: AppSpacing.pM,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader('Monthly Overview', theme),
+                  AppSpacing.vM,
+                  _buildMonthlySummary(theme),
+                  AppSpacing.vXL,
+                  _buildSectionHeader('Spending Trend', theme),
+                  AppSpacing.vM,
+                  _buildSpendingTrends(theme),
+                  AppSpacing.vXL,
+                  _buildHeaderWithAction(
+                    'Spending by Category',
+                    'Add Category',
+                    () => Get.toNamed(AppRoutes.ADD_CATEGORY),
+                    theme,
+                  ),
+                  AppSpacing.vM,
+                  _buildCategorySpendingList(theme),
+                  AppSpacing.vXL,
+                  _buildSectionHeader('Recurring Transactions', theme),
+                  AppSpacing.vM,
+                  _buildRecurringList(theme),
+                ],
+              ),
             ),
           ),
         ),

@@ -8,6 +8,7 @@ import '../../../data/models/transaction_model.dart';
 import '../../../../core/values/colors.dart';
 import '../../../../core/values/spacing.dart';
 import '../../../../app/routes/app_routes.dart';
+import '../../main_navigation/views/responsive_wrapper.dart';
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
@@ -34,38 +35,40 @@ class DashboardView extends GetView<DashboardController> {
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            controller.onInit();
-            await Future.delayed(const Duration(milliseconds: 500));
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: AppSpacing.pM,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildBalanceCard(theme),
-                AppSpacing.vL,
-                _buildHeaderWithAction(
-                  'My Cards',
-                  'Add Card',
-                  () => Get.toNamed(AppRoutes.ADD_CARD),
-                  theme,
-                ),
-                AppSpacing.vS,
-                _buildCardsList(cardController, theme),
-                AppSpacing.vL,
-                _buildSummaryRow(theme),
-                AppSpacing.vXL,
-                _buildHeaderWithAction('Recent Activity', 'See All', () {
-                  final mainNavController =
-                      Get.find<MainNavigationController>();
-                  mainNavController.changeIndex(1);
-                }, theme),
-                AppSpacing.vS,
-                _buildRecentTransactions(theme),
-              ],
+        child: ResponsiveWrapper(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              controller.onInit();
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: AppSpacing.pM,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildBalanceCard(theme),
+                  AppSpacing.vL,
+                  _buildHeaderWithAction(
+                    'My Cards',
+                    'Add Card',
+                    () => Get.toNamed(AppRoutes.ADD_CARD),
+                    theme,
+                  ),
+                  AppSpacing.vS,
+                  _buildCardsList(cardController, theme),
+                  AppSpacing.vL,
+                  _buildSummaryRow(theme),
+                  AppSpacing.vXL,
+                  _buildHeaderWithAction('Recent Activity', 'See All', () {
+                    final mainNavController =
+                        Get.find<MainNavigationController>();
+                    mainNavController.changeIndex(1);
+                  }, theme),
+                  AppSpacing.vS,
+                  _buildRecentTransactions(theme),
+                ],
+              ),
             ),
           ),
         ),

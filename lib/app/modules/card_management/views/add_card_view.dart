@@ -19,23 +19,26 @@ class AddCardView extends GetView<CardManagementController> {
       body: SafeArea(
         child: Column(
           children: [
-            Obx(
-              () => CreditCardWidget(
-                cardNumber: controller.cardNumber.value,
-                expiryDate: '',
-                cardHolderName: controller.cardHolderName.value,
-                cvvCode: '',
-                showBackView: false,
-                obscureCardNumber: true,
-                obscureCardCvv: true,
-                isHolderNameVisible: true,
-                cardBgColor: theme.colorScheme.primary,
-                onCreditCardWidgetChange: (CreditCardBrand brand) {},
+            SizedBox(
+              child: Obx(
+                () => CreditCardWidget(
+                  cardNumber: controller.cardNumber.value,
+                  expiryDate: '',
+                  cardHolderName: controller.cardHolderName.value,
+                  cvvCode: '',
+                  showBackView: false,
+                  obscureCardNumber: true,
+                  obscureCardCvv: true,
+                  isHolderNameVisible: true,
+                  cardBgColor: theme.colorScheme.primary,
+                  onCreditCardWidgetChange: (CreditCardBrand brand) {},
+                ),
               ),
             ),
+
             Expanded(
               child: SingleChildScrollView(
-                padding: AppSpacing.pL,
+                padding: AppSpacing.pM,
                 child: Form(
                   key: controller.formKey,
                   child: Column(

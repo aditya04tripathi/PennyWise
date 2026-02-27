@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pennywise/app/modules/transactions/widgets/lazy_transaction_list.dart';
 import '../controllers/transaction_list_controller.dart';
 import '../../../../core/values/spacing.dart';
 import '../widgets/lazy_transaction_list.dart';
+import '../../main_navigation/views/responsive_wrapper.dart';
 
 class TransactionsView extends GetView<TransactionListController> {
   const TransactionsView({super.key});
@@ -23,11 +25,13 @@ class TransactionsView extends GetView<TransactionListController> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildSearchBar(theme),
-            const Expanded(child: LazyTransactionList()),
-          ],
+        child: ResponsiveWrapper(
+          child: Column(
+            children: [
+              _buildSearchBar(theme),
+              const Expanded(child: LazyTransactionList()),
+            ],
+          ),
         ),
       ),
     );

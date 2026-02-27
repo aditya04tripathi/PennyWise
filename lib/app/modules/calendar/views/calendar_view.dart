@@ -6,6 +6,7 @@ import '../controllers/calendar_controller.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../../../core/values/colors.dart';
 import '../../../../core/values/spacing.dart';
+import '../../main_navigation/views/responsive_wrapper.dart';
 
 class CalendarView extends GetView<CalendarController> {
   const CalendarView({super.key});
@@ -17,119 +18,125 @@ class CalendarView extends GetView<CalendarController> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(title: const Text('CALENDAR')),
       body: SafeArea(
-        child: Column(
-          children: [
-            Obx(
-              () => TableCalendar(
-                firstDay: DateTime.utc(2020, 1, 1),
-                lastDay: DateTime.now(),
-                focusedDay: controller.focusedDay.value,
-                selectedDayPredicate: (day) =>
-                    isSameDay(controller.selectedDay.value, day),
-                onDaySelected: (selectedDay, focusedDay) {
-                  controller.selectedDay.value = selectedDay;
-                  controller.focusedDay.value = focusedDay;
-                },
-                eventLoader: (day) => controller.getTransactionsForDay(day),
-                calendarBuilders: CalendarBuilders(
-                  markerBuilder: (context, date, events) {
-                    if (events.isEmpty) return const SizedBox.shrink();
-                    final hasIncome = controller.hasIncome(date);
-                    final hasExpense = controller.hasExpense(date);
-
-                    return Positioned(
-                      bottom: 4,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (hasIncome)
-                            Container(
-                              width: 6,
-                              height: 6,
-                              margin: const EdgeInsets.symmetric(horizontal: 1),
-                              decoration: const BoxDecoration(
-                                color: AppColors.success,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          if (hasExpense)
-                            Container(
-                              width: 6,
-                              height: 6,
-                              margin: const EdgeInsets.symmetric(horizontal: 1),
-                              decoration: const BoxDecoration(
-                                color: AppColors.error,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
+        child: ResponsiveWrapper(
+          child: Column(
+            children: [
+              Obx(
+                () => TableCalendar(
+                  firstDay: DateTime.utc(2020, 1, 1),
+                  lastDay: DateTime.now(),
+                  focusedDay: controller.focusedDay.value,
+                  selectedDayPredicate: (day) =>
+                      isSameDay(controller.selectedDay.value, day),
+                  onDaySelected: (selectedDay, focusedDay) {
+                    controller.selectedDay.value = selectedDay;
+                    controller.focusedDay.value = focusedDay;
                   },
-                ),
-                calendarStyle: CalendarStyle(
-                  todayDecoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    shape: BoxShape.rectangle,
-                    border: Border.all(color: theme.colorScheme.primary),
+                  eventLoader: (day) => controller.getTransactionsForDay(day),
+                  calendarBuilders: CalendarBuilders(
+                    markerBuilder: (context, date, events) {
+                      if (events.isEmpty) return const SizedBox.shrink();
+                      final hasIncome = controller.hasIncome(date);
+                      final hasExpense = controller.hasExpense(date);
+
+                      return Positioned(
+                        bottom: 4,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (hasIncome)
+                              Container(
+                                width: 6,
+                                height: 6,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 1,
+                                ),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.success,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            if (hasExpense)
+                              Container(
+                                width: 6,
+                                height: 6,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 1,
+                                ),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.error,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                  selectedDecoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
-                    shape: BoxShape.rectangle,
+                  calendarStyle: CalendarStyle(
+                    todayDecoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withOpacity(0.1),
+                      shape: BoxShape.rectangle,
+                      border: Border.all(color: theme.colorScheme.primary),
+                    ),
+                    selectedDecoration: BoxDecoration(
+                      color: theme.colorScheme.primary,
+                      shape: BoxShape.rectangle,
+                    ),
+                    defaultTextStyle: theme.textTheme.bodyMedium!,
+                    weekendTextStyle: theme.textTheme.bodyMedium!.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    ),
+                    todayTextStyle: theme.textTheme.bodyMedium!.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                    selectedTextStyle: theme.textTheme.bodyMedium!.copyWith(
+                      color: theme.colorScheme.onPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
-                  defaultTextStyle: theme.textTheme.bodyMedium!,
-                  weekendTextStyle: theme.textTheme.bodyMedium!.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  headerStyle: HeaderStyle(
+                    formatButtonVisible: false,
+                    titleCentered: true,
+                    titleTextStyle: theme.textTheme.headlineLarge!,
+                    leftChevronIcon: Icon(
+                      Icons.chevron_left,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    rightChevronIcon: Icon(
+                      Icons.chevron_right,
+                      color: theme.colorScheme.onSurface,
+                    ),
                   ),
-                  todayTextStyle: theme.textTheme.bodyMedium!.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w900,
-                  ),
-                  selectedTextStyle: theme.textTheme.bodyMedium!.copyWith(
-                    color: theme.colorScheme.onPrimary,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                headerStyle: HeaderStyle(
-                  formatButtonVisible: false,
-                  titleCentered: true,
-                  titleTextStyle: theme.textTheme.headlineLarge!,
-                  leftChevronIcon: Icon(
-                    Icons.chevron_left,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                  rightChevronIcon: Icon(
-                    Icons.chevron_right,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                daysOfWeekStyle: DaysOfWeekStyle(
-                  weekdayStyle: theme.textTheme.labelSmall!,
-                  weekendStyle: theme.textTheme.labelSmall!.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  daysOfWeekStyle: DaysOfWeekStyle(
+                    weekdayStyle: theme.textTheme.labelSmall!,
+                    weekendStyle: theme.textTheme.labelSmall!.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    ),
                   ),
                 ),
               ),
-            ),
-            AppSpacing.vM,
-            Divider(height: 1),
-            Expanded(
-              child: Obx(() {
-                if (controller.transactionsForSelectedDay.isEmpty) {
-                  return _buildEmptyState(theme);
-                }
-                return ListView.separated(
-                  padding: AppSpacing.pM,
-                  itemCount: controller.transactionsForSelectedDay.length,
-                  separatorBuilder: (context, index) => AppSpacing.vS,
-                  itemBuilder: (context, index) {
-                    final tx = controller.transactionsForSelectedDay[index];
-                    return _buildTransactionItem(tx, theme);
-                  },
-                );
-              }),
-            ),
-          ],
+              AppSpacing.vM,
+              Divider(height: 1),
+              Expanded(
+                child: Obx(() {
+                  if (controller.transactionsForSelectedDay.isEmpty) {
+                    return _buildEmptyState(theme);
+                  }
+                  return ListView.separated(
+                    padding: AppSpacing.pM,
+                    itemCount: controller.transactionsForSelectedDay.length,
+                    separatorBuilder: (context, index) => AppSpacing.vS,
+                    itemBuilder: (context, index) {
+                      final tx = controller.transactionsForSelectedDay[index];
+                      return _buildTransactionItem(tx, theme);
+                    },
+                  );
+                }),
+              ),
+            ],
+          ),
         ),
       ),
     );

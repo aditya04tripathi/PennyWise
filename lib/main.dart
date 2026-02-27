@@ -9,7 +9,6 @@ import 'app/services/security_service.dart';
 import 'app/services/notification_service.dart';
 import 'app/data/services/data_store_service.dart';
 import 'core/theme/app_theme.dart';
-import 'app/services/dev_seed_service.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'app/services/ad_service.dart';
 
@@ -26,7 +25,6 @@ void main() async {
 
   await Hive.initFlutter();
 
-  // Register Adapters
   Hive.registerAdapter(UserAdapter());
   Hive.registerAdapter(TransactionAdapter());
   Hive.registerAdapter(TransactionTypeAdapter());
@@ -35,14 +33,12 @@ void main() async {
   Hive.registerAdapter(PaymentCardAdapter());
   Hive.registerAdapter(CardTypeAdapter());
 
-  // Initialize Services
   final store = await Get.put(PennyWiseStore()).init();
   Get.put(SecurityService());
   await Get.put(NotificationService()).init();
   await MobileAds.instance.initialize();
   await Get.put(AdService()).init();
 
-  // Seed initial categories if empty
   if (store.categories.getAll().isEmpty) {
     await store.categories.addAll([
       Category(id: '1', name: 'Food', iconCode: 0xe527, colorValue: 0xFFF59E0B),
@@ -72,8 +68,6 @@ void main() async {
       ),
     ]);
   }
-
-  await Get.put(DevSeedService()).seedIfEmpty(store);
 
   final initialRoute = store.user.value?.isOnboardingCompleted == true
       ? AppRoutes.AUTH_GATE

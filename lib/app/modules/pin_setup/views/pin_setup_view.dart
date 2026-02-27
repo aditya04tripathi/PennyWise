@@ -28,8 +28,6 @@ class PinSetupView extends GetView<PinSetupController> {
               ),
               const SizedBox(height: 48),
               _buildPinField(theme),
-              AppSpacing.vXL,
-              _buildBiometricToggle(theme),
               const Spacer(),
               Obx(
                 () => ElevatedButton(
@@ -67,41 +65,6 @@ class PinSetupView extends GetView<PinSetupController> {
           decoration: const InputDecoration(hintText: '****', counterText: ''),
         ),
       ],
-    );
-  }
-
-  Widget _buildBiometricToggle(ThemeData theme) {
-    return Obx(
-      () => Container(
-        padding: AppSpacing.pM,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border.all(color: theme.colorScheme.outline),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.fingerprint, color: theme.colorScheme.primary),
-            AppSpacing.hM,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('BIOMETRIC LOGIN', style: theme.textTheme.labelLarge),
-                  Text(
-                    'Use FaceID/TouchID to login',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-            Switch(
-              value: controller.isBiometricEnabled.value,
-              onChanged: (v) => controller.isBiometricEnabled.value = v,
-              activeColor: theme.colorScheme.primary,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

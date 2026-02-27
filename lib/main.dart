@@ -10,13 +10,20 @@ import 'app/services/notification_service.dart';
 import 'app/data/services/data_store_service.dart';
 import 'core/theme/app_theme.dart';
 import 'app/services/dev_seed_service.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'app/services/ad_service.dart';
 
 import 'app/routes/app_routes.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Hive
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   await Hive.initFlutter();
 
   // Register Adapters
@@ -32,6 +39,8 @@ void main() async {
   final store = await Get.put(PennyWiseStore()).init();
   Get.put(SecurityService());
   await Get.put(NotificationService()).init();
+  await MobileAds.instance.initialize();
+  await Get.put(AdService()).init();
 
   // Seed initial categories if empty
   if (store.categories.getAll().isEmpty) {

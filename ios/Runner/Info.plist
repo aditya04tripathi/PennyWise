@@ -55,6 +55,12 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSCameraUsageDescription</key>
+	<string>PennyWise needs camera access to capture receipt photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>PennyWise needs photo library access to attach images to transactions.</string>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-5931956401636205~9308739721</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

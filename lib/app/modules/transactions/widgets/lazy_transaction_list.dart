@@ -208,165 +208,168 @@ class LazyTransactionList extends StatelessWidget {
     final controller = Get.find<LazyTransactionListController>();
     final theme = Get.theme;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.m,
-        vertical: AppSpacing.xs,
-      ),
-      padding: AppSpacing.pM,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border.all(color: theme.colorScheme.outline),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: AppSpacing.pS,
-            decoration: BoxDecoration(
-              color: (isIncome ? AppColors.incomeGreen : AppColors.expenseRed)
-                  .withOpacity(0.1),
-              borderRadius: BorderRadius.zero,
+    return InkWell(
+      onTap: () => Get.toNamed(AppRoutes.TRANSACTION_DETAIL, arguments: tx),
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.m,
+          vertical: AppSpacing.xs,
+        ),
+        padding: AppSpacing.pM,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border.all(color: theme.colorScheme.outline),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: AppSpacing.pS,
+              decoration: BoxDecoration(
+                color: (isIncome ? AppColors.incomeGreen : AppColors.expenseRed)
+                    .withOpacity(0.1),
+                borderRadius: BorderRadius.zero,
+              ),
+              child: Icon(
+                isIncome ? Icons.arrow_upward : Icons.arrow_downward,
+                color: isIncome ? AppColors.incomeGreen : AppColors.expenseRed,
+                size: 16,
+              ),
             ),
-            child: Icon(
-              isIncome ? Icons.arrow_upward : Icons.arrow_downward,
-              color: isIncome ? AppColors.incomeGreen : AppColors.expenseRed,
-              size: 16,
+            AppSpacing.hM,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tx.note?.toUpperCase() ?? 'TRANSACTION',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  AppSpacing.vXS,
+                  Text(
+                    DateFormat('MMM dd, yyyy').format(tx.date),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
             ),
-          ),
-          AppSpacing.hM,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  tx.note?.toUpperCase() ?? 'TRANSACTION',
-                  style: theme.textTheme.titleSmall?.copyWith(
+                  '${isIncome ? "+" : "-"}\$${tx.amount.toStringAsFixed(2)}',
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 1.2,
+                    color: isIncome
+                        ? AppColors.incomeGreen
+                        : AppColors.expenseRed,
                   ),
                 ),
-                AppSpacing.vXS,
-                Text(
-                  DateFormat('MMM dd, yyyy').format(tx.date),
-                  style: theme.textTheme.bodySmall,
-                ),
+                if (tx.isRecurring) ...[
+                  AppSpacing.vXS,
+                  Icon(
+                    Icons.repeat,
+                    size: 12,
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ],
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${isIncome ? "+" : "-"}\$${tx.amount.toStringAsFixed(2)}',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: isIncome
-                      ? AppColors.incomeGreen
-                      : AppColors.expenseRed,
-                ),
+            AppSpacing.hS,
+            PopupMenuButton<String>(
+              icon: Icon(
+                Icons.more_vert,
+                size: 20,
+                color: theme.colorScheme.onSurface,
               ),
-              if (tx.isRecurring) ...[
-                AppSpacing.vXS,
-                Icon(
-                  Icons.repeat,
-                  size: 12,
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
-                ),
-              ],
-            ],
-          ),
-          AppSpacing.hS,
-          PopupMenuButton<String>(
-            icon: Icon(
-              Icons.more_vert,
-              size: 20,
-              color: theme.colorScheme.onSurface,
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            color: theme.colorScheme.surface,
-            elevation: 8,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
-            ),
-            onSelected: (value) async {
-              if (value == 'edit') {
-                Get.toNamed(AppRoutes.ADD_TRANSACTION, arguments: tx);
-              } else if (value == 'delete') {
-                final confirm = await Get.defaultDialog<bool>(
-                  title: 'DELETE TRANSACTION',
-                  titlePadding: const EdgeInsets.only(top: 24),
-                  contentPadding: const EdgeInsets.all(24),
-                  radius: 0,
-                  middleText:
-                      'Are you sure you want to delete this transaction?',
-                  confirm: ElevatedButton(
-                    onPressed: () => Get.back(result: true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.expenseRed,
-                      foregroundColor: Colors.white,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              color: theme.colorScheme.surface,
+              elevation: 8,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
+              ),
+              onSelected: (value) async {
+                if (value == 'edit') {
+                  Get.toNamed(AppRoutes.ADD_TRANSACTION, arguments: tx);
+                } else if (value == 'delete') {
+                  final confirm = await Get.defaultDialog<bool>(
+                    title: 'DELETE TRANSACTION',
+                    titlePadding: const EdgeInsets.only(top: 24),
+                    contentPadding: const EdgeInsets.all(24),
+                    radius: 0,
+                    middleText:
+                        'Are you sure you want to delete this transaction?',
+                    confirm: ElevatedButton(
+                      onPressed: () => Get.back(result: true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.expenseRed,
+                        foregroundColor: Colors.white,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        elevation: 0,
                       ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'DELETE',
-                      style: TextStyle(fontWeight: FontWeight.w900),
-                    ),
-                  ),
-                  cancel: TextButton(
-                    onPressed: () => Get.back(result: false),
-                    style: TextButton.styleFrom(
-                      foregroundColor: theme.colorScheme.onSurface,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+                      child: const Text(
+                        'DELETE',
+                        style: TextStyle(fontWeight: FontWeight.w900),
                       ),
                     ),
-                    child: const Text(
-                      'CANCEL',
-                      style: TextStyle(fontWeight: FontWeight.w900),
+                    cancel: TextButton(
+                      onPressed: () => Get.back(result: false),
+                      style: TextButton.styleFrom(
+                        foregroundColor: theme.colorScheme.onSurface,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                      ),
+                      child: const Text(
+                        'CANCEL',
+                        style: TextStyle(fontWeight: FontWeight.w900),
+                      ),
                     ),
-                  ),
-                );
-                if (confirm == true) {
-                  controller.deleteTransaction(tx);
+                  );
+                  if (confirm == true) {
+                    controller.deleteTransaction(tx);
+                  }
                 }
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    const Icon(Icons.edit_outlined, size: 18),
-                    AppSpacing.hM,
-                    Text('EDIT', style: theme.textTheme.labelLarge),
-                  ],
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.edit_outlined, size: 18),
+                      AppSpacing.hM,
+                      Text('EDIT', style: theme.textTheme.labelLarge),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.delete_outline,
-                      size: 18,
-                      color: AppColors.expenseRed,
-                    ),
-                    AppSpacing.hM,
-                    Text(
-                      'DELETE',
-                      style: theme.textTheme.labelLarge?.copyWith(
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.delete_outline,
+                        size: 18,
                         color: AppColors.expenseRed,
                       ),
-                    ),
-                  ],
+                      AppSpacing.hM,
+                      Text(
+                        'DELETE',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: AppColors.expenseRed,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

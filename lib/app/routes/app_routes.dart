@@ -6,6 +6,8 @@ import '../modules/add_transaction/bindings/add_transaction_binding.dart';
 import '../modules/add_transaction/views/add_transaction_view.dart';
 import '../modules/transactions/bindings/transactions_binding.dart';
 import '../modules/transactions/views/transactions_view.dart';
+import '../modules/transaction_detail/bindings/transaction_detail_binding.dart';
+import '../modules/transaction_detail/views/transaction_detail_view.dart';
 import '../modules/main_navigation/bindings/main_navigation_binding.dart';
 import '../modules/pin_setup/bindings/pin_setup_binding.dart';
 import '../modules/pin_setup/views/pin_setup_view.dart';
@@ -26,6 +28,7 @@ class AppRoutes {
   static const ADD_CARD = '/add-card';
   static const ADD_TRANSACTION = '/add-transaction';
   static const TRANSACTIONS = '/transactions';
+  static const TRANSACTION_DETAIL = '/transaction-detail';
   static const PIN_SETUP = '/pin-setup';
   static const ACCOUNT = '/account';
   static const CURRENCY = '/currency';
@@ -72,6 +75,12 @@ class AppRoutes {
       name: TRANSACTIONS,
       page: () => const TransactionsView(),
       binding: TransactionsBinding(),
+    ),
+    GetPage(
+      name: TRANSACTION_DETAIL,
+      page: () => const TransactionDetailView(),
+      binding: TransactionDetailBinding(),
+      transition: Transition.rightToLeft,
     ),
     GetPage(
       name: PIN_SETUP,

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,6 +27,7 @@ class TransactionController extends GetxController {
 
   final selectedImagePath = Rxn<String>();
   final _picker = ImagePicker();
+  final isCapturing = false.obs;
 
   final categories = <Category>[].obs;
   final cards = <PaymentCard>[].obs;
@@ -80,7 +82,11 @@ class TransactionController extends GetxController {
 
   Future<void> pickImage(ImageSource source) async {
     try {
-      final XFile? image = await _picker.pickImage(source: source);
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 1600,
+      );
       if (image != null) {
         selectedImagePath.value = image.path;
       }
@@ -88,6 +94,89 @@ class TransactionController extends GetxController {
       AppSnackbar.show(
         title: 'Error',
         message: 'Failed to pick image: $e',
+        type: SnackbarType.error,
+      );
+    }
+  }
+
+  Future<void> capturePhotoWithConfirm(BuildContext context) async {
+    try {
+      isCapturing.value = true;
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        maxWidth: 1600,
+      );
+      isCapturing.value = false;
+      if (image == null) return;
+
+      final confirm = await showDialog<bool>(
+        context: context,
+        barrierDismissible: true,
+        builder: (ctx) {
+          final theme = Theme.of(ctx);
+          return Dialog(
+            backgroundColor: theme.colorScheme.surface,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.file(File(image.path), fit: BoxFit.cover),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.of(ctx).pop(false),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color: theme.colorScheme.outline,
+                              ),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
+                              ),
+                            ),
+                            child: const Text('RETAKE'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.of(ctx).pop(true),
+                            style: ElevatedButton.styleFrom(
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text('USE PHOTO'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+      if (confirm == true) {
+        selectedImagePath.value = image.path;
+      } else {
+        // If retake requested, recurse once
+        await capturePhotoWithConfirm(context);
+      }
+    } catch (e) {
+      isCapturing.value = false;
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to capture image: $e',
         type: SnackbarType.error,
       );
     }

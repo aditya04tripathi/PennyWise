@@ -512,9 +512,13 @@ class AddTransactionView extends GetView<TransactionController> {
       children: [
         Text('ATTACHMENT (OPTIONAL)', style: theme.textTheme.labelSmall),
         AppSpacing.vS,
-        Obx(
-          () => controller.selectedImagePath.value != null
-              ? Stack(
+        Obx(() {
+          final imagePath = controller.selectedImagePath.value;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (imagePath != null)
+                Stack(
                   children: [
                     Container(
                       height: 200,
@@ -522,10 +526,7 @@ class AddTransactionView extends GetView<TransactionController> {
                       decoration: BoxDecoration(
                         border: Border.all(color: theme.colorScheme.outline),
                       ),
-                      child: Image.file(
-                        File(controller.selectedImagePath.value!),
-                        fit: BoxFit.cover,
-                      ),
+                      child: Image.file(File(imagePath), fit: BoxFit.cover),
                     ),
                     Positioned(
                       top: 8,
@@ -543,41 +544,49 @@ class AddTransactionView extends GetView<TransactionController> {
                       ),
                     ),
                   ],
-                )
-              : InkWell(
-                  onTap: () async {
-                    final picker = ImagePicker();
-                    final image = await picker.pickImage(
-                      source: ImageSource.gallery,
-                    );
-                    if (image != null) {
-                      controller.selectedImagePath.value = image.path;
-                    }
-                  },
-                  child: Container(
-                    height: 100,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      border: Border.all(color: theme.colorScheme.outline),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.add_a_photo_outlined,
-                          color: theme.colorScheme.onSurface.withOpacity(0.5),
-                        ),
-                        AppSpacing.vS,
-                        Text(
-                          'ADD RECEIPT OR PHOTO',
-                          style: theme.textTheme.labelSmall,
-                        ),
-                      ],
+                ),
+              AppSpacing.vS,
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () =>
+                          controller.pickImage(ImageSource.gallery),
+                      icon: const Icon(Icons.photo_library_outlined),
+                      label: const Text('ADD FROM GALLERY'),
                     ),
                   ),
-                ),
-        ),
+                  AppSpacing.hM,
+                  Expanded(
+                    child: Obx(
+                      () => ElevatedButton.icon(
+                        onPressed: controller.isCapturing.value
+                            ? null
+                            : () => controller.capturePhotoWithConfirm(
+                                Get.context!,
+                              ),
+                        icon: controller.isCapturing.value
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.camera_alt_outlined),
+                        label: Text(
+                          controller.isCapturing.value
+                              ? 'OPENING CAMERA...'
+                              : 'CAPTURE RECEIPT',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }),
       ],
     );
   }

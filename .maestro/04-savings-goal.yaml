@@ -1,0 +1,17 @@
+appId: ${APP_ID || 'com.adityatripathi.penny-wise'}
+name: Create a savings goal and contribute
+---
+- launchApp
+- tapOn: "Settings"
+- tapOn: "Savings goals"
+- tapOn: "Add goal"
+- tapOn: "Name"
+- inputText: "Trip"
+- tapOn: "Target amount"
+- inputText: "100"
+- tapOn: "Add goal"
+- tapOn: "Trip.*"
+- tapOn: "Amount"
+- inputText: "25"
+- tapOn: "Add to goal"
+- assertVisible: "25%"

@@ -1,0 +1,12 @@
+appId: ${APP_ID || 'com.adityatripathi.penny-wise'}
+name: Onboarding on a fresh install
+---
+- clearState
+- launchApp
+- tapOn: "Get started"
+- tapOn: "Your name (optional)"
+- inputText: "Maestro"
+- tapOn: "Continue"
+- tapOn: "Skip for now"
+- assertVisible: "Overview"
+- assertVisible: "No transactions yet"

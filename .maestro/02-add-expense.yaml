@@ -1,0 +1,15 @@
+appId: ${APP_ID || 'com.adityatripathi.penny-wise'}
+name: Record an expense and find it in Activity
+---
+- launchApp
+- tapOn: "Add transaction"
+- tapOn:
+    text: "Amount.*"
+- inputText: "12.50"
+- tapOn: "Description"
+- inputText: "Maestro lunch"
+- tapOn: "Food"
+- tapOn: "Add transaction"
+- assertVisible: "Maestro lunch"
+- tapOn: "Activity"
+- assertVisible: "Maestro lunch"

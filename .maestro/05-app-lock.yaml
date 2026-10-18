@@ -1,0 +1,19 @@
+appId: ${APP_ID || 'com.adityatripathi.penny-wise'}
+name: Set a PIN, then require it before turning the lock off
+---
+- launchApp
+- tapOn: "Settings"
+- tapOn: "App lock"
+- tapOn: "Set a PIN"
+- repeat:
+    times: 2
+    commands:
+      - tapOn: "1"
+      - tapOn: "3"
+      - tapOn: "5"
+      - tapOn: "7"
+- assertVisible: "Turn off app lock"
+- tapOn: "Turn off app lock"
+- tapOn: "Continue"
+- assertVisible: "Enter current PIN"
+- tapOn: "Cancel"

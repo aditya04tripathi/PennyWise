@@ -1,0 +1,18 @@
+appId: ${APP_ID || 'com.adityatripathi.penny-wise'}
+name: Add a savings account and transfer into it
+---
+- launchApp
+- tapOn: "Settings"
+- tapOn: "Accounts"
+- tapOn: "Add"
+- tapOn: "Name"
+- inputText: "Rainy day"
+- tapOn: "Savings"
+- tapOn: "Add account"
+- assertVisible: "Rainy day"
+- tapOn: "Transfer between accounts"
+- tapOn: "Amount"
+- inputText: "5"
+- tapOn: "Save transfer"
+- assertVisible: "Recent transfers"
+- assertVisible: "Main account → Rainy day"

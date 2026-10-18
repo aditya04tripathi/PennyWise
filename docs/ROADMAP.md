@@ -39,6 +39,7 @@ Status labels: **DONE** means implemented and covered by automated tests. **BUIL
 | Savings goals                                     | P2       | DONE (repository, backup) / BUILT (screens)                            |
 | Subscription detection                            | P2       | DONE (detector) / BUILT (Planning list, make recurring)                |
 | Safe-to-spend                                     | P2       | DONE (calculation) / BUILT (Home)                                      |
+| PennyWise Pro one-time unlock (RevenueCat)        | —        | DONE (entitlement rules) / BUILT (paywall, gates), NOT RUN on a store  |
 | Reading the Hive data in place (no manual backup) | P2       | DEFERRED                                                               |
 | Home-screen widgets                               | P3       | DEFERRED                                                               |
 | Localisation                                      | P3       | DEFERRED                                                               |
@@ -52,6 +53,10 @@ Status labels: **DONE** means implemented and covered by automated tests. **BUIL
 - **Subscription detection.** Groups expenses from the last 400 days by normalised description. A group needs at least three charges, amounts within 10% of each other, and every gap weekly (6–8 days), monthly (27–33), or yearly (355–375). Items that are already recurring are excluded. Choosing "Make recurring" turns the latest charge into a recurring item. Later charges are suggested for confirmation and never posted automatically.
 - **Receipt encryption.** See [SECURITY.md](SECURITY.md#receipts).
 - **Re-authentication.** Changing the PIN or turning off app lock requires the current PIN, or biometrics if enabled. Wrong entries count towards the same lockout as the lock screen.
+
+### PennyWise Pro
+
+Pro is one non-consumable purchase, sold through RevenueCat. It unlocks more than one account, new savings goals, new or changed category limits, safe-to-spend, and the subscription list. Everything from PennyWise 1 stays free, and data the user already created stays usable without Pro. Existing accounts, goals, and limits keep working and can be edited or removed. The rules live in `domain/entitlements.ts` and are enforced in the services as well as the UI.
 
 ### Deferred, with reasons
 

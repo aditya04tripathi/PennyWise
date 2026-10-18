@@ -41,4 +41,4 @@ PennyWise 1 stored the PIN in plaintext and also put it in backups. The importer
 
 ## Logging and network
 
-The app has no network calls, no analytics, and no ads. AdMob from PennyWise 1 was removed; adding it back needs the owner's approval. No amounts, notes, PINs, keys, or receipts are ever logged.
+The app has no analytics and no ads; AdMob from PennyWise 1 was removed. The only network traffic is RevenueCat, used for the optional PennyWise Pro purchase. It receives an anonymous app user ID, store receipts, and device and app metadata. It never receives ledger data, amounts, notes, receipts, or keys. The RevenueCat keys in `.env` are public SDK keys, not secrets. The Pro status is cached in SecureStore so it still works offline. No amounts, notes, PINs, keys, or receipts are ever logged.

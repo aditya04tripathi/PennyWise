@@ -18,6 +18,7 @@ Everything stays on the device. There is no account, no server, and no analytics
 - Encrypted backup and restore (including receipts), CSV export, and import of PennyWise 1 backups with reconciliation checks
 - PIN app lock with lockout, the current PIN required before changing or turning off the lock, biometric unlock, auto-lock timing, a privacy overlay in the app switcher, and hidden amounts
 - Light and dark appearance
+- PennyWise Pro: an optional one-time purchase through RevenueCat that unlocks multiple accounts, savings goals, category limits, and insights
 
 ## Tech stack
 

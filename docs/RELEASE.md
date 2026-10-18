@@ -21,3 +21,11 @@ Building with EAS is not configured yet and needs an account decision. Local bui
 npx expo run:ios --configuration Release
 npx expo run:android --variant release
 ```
+
+## PennyWise Pro (RevenueCat)
+
+1. Create a non-consumable product in App Store Connect and in the Google Play Console.
+2. In RevenueCat, add both apps, attach the products to an entitlement called `pro`, and put them in the current offering, ideally as the Lifetime package.
+3. Copy `.env.example` to `.env` (or set EAS environment variables) and fill in `EXPO_PUBLIC_REVENUECAT_IOS_KEY` and `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`.
+4. Rebuild the native app. Expo Go cannot make purchases. Without keys, the Pro screen says purchases are not set up, and nothing is unlocked.
+5. Test with a sandbox account: buy, restore, a refund that removes Pro, and offline launch (the cached Pro status should still apply).

@@ -7,6 +7,10 @@ import { loadSettings } from '@/data/repositories/settings-repository';
 
 import { ensureDefaultCategories } from '../catalog/catalog-service';
 import {
+	loadCachedEntitlement,
+	syncEntitlementWithStore,
+} from '../pro/purchase-service';
+import {
 	deleteAllReceipts,
 	encryptPlaintextReceipts,
 } from '../receipts/receipt-files';
@@ -27,6 +31,8 @@ export async function bootstrapSession(): Promise<void> {
 		session.setReady(database, encrypted, settings, security);
 		await ensureDefaultCategories();
 		await encryptPlaintextReceipts().catch(() => 0);
+		await loadCachedEntitlement();
+		syncEntitlementWithStore().catch(() => undefined);
 	} catch (error) {
 		session.setFailed(
 			error instanceof DatabaseOpenError ? error.failure : 'unknown',

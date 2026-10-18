@@ -10,6 +10,7 @@ import {
 import type { SqlExecutor } from '@/data/database/sql-database';
 import { accountBalance } from '@/domain/calculations/insights';
 import { toLocalDateTime } from '@/domain/dates';
+import { canAddAccount } from '@/domain/entitlements';
 import {
 	MAIN_ACCOUNT_ID,
 	type Account,
@@ -19,6 +20,7 @@ import {
 import type { MinorUnits } from '@/domain/money/money';
 import { secureRandomId } from '@/lib/crypto/random';
 
+import { useProStore } from '../pro/pro-store';
 import { requireDatabase, useSession } from '../session/session-store';
 
 export const ACCOUNT_KIND_LABELS: Record<AccountKind, string> = {
@@ -79,6 +81,14 @@ export async function saveAccount(
 	const error = validateAccountName(input.name);
 	if (error) throw new Error(error);
 	const database = requireDatabase();
+	if (
+		!existing &&
+		!canAddAccount(
+			useProStore.getState().isPro,
+			(await listAccounts(database)).length,
+		)
+	)
+		throw new Error('PennyWise Pro is needed to add more accounts.');
 	const sortOrder = existing
 		? existing.sortOrder
 		: (await listAccounts(database, true)).length;

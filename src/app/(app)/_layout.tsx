@@ -55,6 +55,10 @@ export default function AppLayout() {
 			/>
 			<Stack.Screen name='goals/edit' options={{ title: 'Goal' }} />
 			<Stack.Screen
+				name='pro'
+				options={{ presentation: 'modal', title: 'PennyWise Pro' }}
+			/>
+			<Stack.Screen
 				name='settings/profile'
 				options={{ title: 'Profile' }}
 			/>

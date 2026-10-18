@@ -22,9 +22,11 @@ import {
 	previewCurrencyChange,
 	updateSettings,
 } from '@/features/settings/settings-service';
+import { useIsPro } from '@/features/pro/pro-store';
 import { useMoneyFormatter, useSettings } from '@/hooks/use-app-data';
 
 export default function SettingsScreen() {
+	const isPro = useIsPro();
 	const settings = useSettings();
 	const security = useSession((state) => state.security);
 	const formatAmount = useMoneyFormatter();
@@ -70,6 +72,14 @@ export default function SettingsScreen() {
 
 	return (
 		<Screen topInset title='Settings'>
+			<Surface padded={false}>
+				<ListRow
+					icon='spark'
+					title='PennyWise Pro'
+					value={isPro ? 'Unlocked' : undefined}
+					onPress={() => router.push('/pro')}
+				/>
+			</Surface>
 			<Section title='Profile'>
 				<Surface padded={false}>
 					<ListRow

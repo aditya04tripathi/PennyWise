@@ -7,10 +7,12 @@ import {
 } from '@/data/repositories/goal-repository';
 import type { SqlExecutor } from '@/data/database/sql-database';
 import { toLocalDateTime } from '@/domain/dates';
+import { canAddGoal } from '@/domain/entitlements';
 import type { GoalContribution, SavingsGoal } from '@/domain/entities';
 import type { MinorUnits } from '@/domain/money/money';
 import { secureRandomId } from '@/lib/crypto/random';
 
+import { useProStore } from '../pro/pro-store';
 import { requireDatabase, useSession } from '../session/session-store';
 
 export interface GoalProgress {
@@ -54,6 +56,8 @@ export async function saveGoal(
 	const error = validateGoalInput(input);
 	if (error) throw new Error(error);
 	if (input.targetMinor <= 0) throw new Error('Enter a target above zero');
+	if (!existing && !canAddGoal(useProStore.getState().isPro))
+		throw new Error('PennyWise Pro is needed to add savings goals.');
 	const goal: SavingsGoal = {
 		id: existing?.id ?? secureRandomId(),
 		name: input.name.trim(),

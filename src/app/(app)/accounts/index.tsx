@@ -19,6 +19,8 @@ import {
 	ACCOUNT_KIND_LABELS,
 	removeTransfer,
 } from '@/features/accounts/account-service';
+import { canAddAccount } from '@/domain/entitlements';
+import { useIsPro } from '@/features/pro/pro-store';
 import { useAccounts, useMoneyFormatter } from '@/hooks/use-app-data';
 import { useLedgerQuery } from '@/hooks/use-ledger-query';
 import { localDateOf } from '@/domain/dates';
@@ -29,6 +31,7 @@ const RECENT_TRANSFER_LIMIT = 20;
 export default function AccountsScreen() {
 	const formatAmount = useMoneyFormatter();
 	const accounts = useAccounts();
+	const isPro = useIsPro();
 	const transfers = useLedgerQuery((db) => listTransfers(db), []);
 	const recentTransfers = useMemo(
 		() =>
@@ -74,7 +77,16 @@ export default function AccountsScreen() {
 							label='Add'
 							variant='ghost'
 							compact
-							onPress={() => router.push('/accounts/edit')}
+							onPress={() =>
+								router.push(
+									canAddAccount(
+										isPro,
+										accounts.accounts.length,
+									)
+										? '/accounts/edit'
+										: '/pro',
+								)
+							}
 						/>
 					),
 				}}
@@ -120,8 +132,9 @@ export default function AccountsScreen() {
 					/>
 				) : (
 					<AppText variant='bodySmall' tone='textSecondary'>
-						Add a second account to move money between accounts.
-						Transfers are not counted as income or spending.
+						{isPro
+							? 'Add a second account to move money between accounts. Transfers are not counted as income or spending.'
+							: 'More accounts and transfers between them come with PennyWise Pro.'}
 					</AppText>
 				)}
 				{recentTransfers.length > 0 ? (

@@ -19,8 +19,10 @@ import {
 	upsertCategory,
 } from '@/data/repositories/category-repository';
 import type { MinorUnits } from '@/domain/money/money';
+import { canSetCategoryLimit } from '@/domain/entitlements';
 import { secureRandomId } from '@/lib/crypto/random';
 
+import { useProStore } from '../pro/pro-store';
 import { requireDatabase, useSession } from '../session/session-store';
 
 export const DEFAULT_CATEGORIES: readonly Omit<Category, 'sortOrder'>[] = [
@@ -100,6 +102,14 @@ export async function saveCategory(
 ): Promise<Category> {
 	const error = validateCategoryName(input.name);
 	if (error) throw new Error(error);
+	if (
+		!canSetCategoryLimit(
+			useProStore.getState().isPro,
+			existing?.budgetLimitMinor ?? null,
+			input.budgetLimitMinor,
+		)
+	)
+		throw new Error('PennyWise Pro is needed to set category limits.');
 	const database = requireDatabase();
 	const count = (await listCategories(database, true)).length;
 	const category: Category = existing

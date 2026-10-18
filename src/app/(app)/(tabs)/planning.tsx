@@ -36,6 +36,7 @@ import {
 	loadSubscriptionCandidates,
 	makeSubscriptionRecurring,
 } from '@/features/insights/insights-service';
+import { useIsPro } from '@/features/pro/pro-store';
 import {
 	countDue,
 	loadRecurringSchedules,
@@ -57,6 +58,7 @@ export default function PlanningScreen() {
 	const theme = useTheme();
 	const settings = useSettings();
 	const formatAmount = useMoneyFormatter();
+	const isPro = useIsPro();
 	const { byId: categories } = useCategories(true);
 	const [monthOffset, setMonthOffset] = useState(0);
 
@@ -175,7 +177,17 @@ export default function PlanningScreen() {
 						alertPercent={settings.budgetAlertPercent}
 					/>
 
-					{data.data.subscriptions.length > 0 ? (
+					{data.data.subscriptions.length > 0 && !isPro ? (
+						<Surface padded={false}>
+							<ListRow
+								icon='spark'
+								title={`${data.data.subscriptions.length} possible ${data.data.subscriptions.length === 1 ? 'subscription' : 'subscriptions'} found`}
+								subtitle='See them with PennyWise Pro'
+								onPress={() => router.push('/pro')}
+							/>
+						</Surface>
+					) : null}
+					{data.data.subscriptions.length > 0 && isPro ? (
 						<Section title='Possible subscriptions'>
 							<Surface padded={false}>
 								{data.data.subscriptions.map(

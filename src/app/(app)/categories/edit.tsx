@@ -22,6 +22,7 @@ import {
 	saveCategory,
 	validateCategoryName,
 } from '@/features/catalog/catalog-service';
+import { useIsPro } from '@/features/pro/pro-store';
 import { useCategories, useSettings } from '@/hooks/use-app-data';
 import { useTheme } from '@/theme/use-theme';
 
@@ -52,6 +53,7 @@ function CategoryForm({ existing }: { existing: Category | null }) {
 	const [icon, setIcon] = useState<CategoryIcon>(existing?.icon ?? 'tag');
 	const [color, setColor] = useState(existing?.color ?? CATEGORY_COLORS[0]);
 	const { currencyCode } = useSettings();
+	const isPro = useIsPro();
 	const [limit, setLimit] = useState(
 		existing?.budgetLimitMinor
 			? formatMoneyInput(existing.budgetLimitMinor, currencyCode)
@@ -111,15 +113,24 @@ function CategoryForm({ existing }: { existing: Category | null }) {
 				error={error}
 				autoFocus={!existing}
 			/>
-			<TextField
-				label='Monthly limit (optional)'
-				value={limit}
-				onChangeText={setLimit}
-				keyboardType='decimal-pad'
-				placeholder='No limit'
-				error={limitError}
-				hint='Planning shows progress against this limit, and budget alerts include it when they are on.'
-			/>
+			{isPro || existing?.budgetLimitMinor ? (
+				<TextField
+					label='Monthly limit (optional)'
+					value={limit}
+					onChangeText={setLimit}
+					keyboardType='decimal-pad'
+					placeholder='No limit'
+					error={limitError}
+					hint='Planning shows progress against this limit, and budget alerts include it when they are on.'
+				/>
+			) : (
+				<Button
+					label='Monthly limits come with PennyWise Pro'
+					variant='ghost'
+					icon='spark'
+					onPress={() => router.push('/pro')}
+				/>
+			)}
 			<Section title='Icon'>
 				<View
 					style={{

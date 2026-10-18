@@ -8,11 +8,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { GoalCard } from '@/components/finance/goal-card';
 import { Screen } from '@/components/ui/screen';
+import { useIsPro } from '@/features/pro/pro-store';
 import { useGoals } from '@/hooks/use-app-data';
 
 export default function GoalsScreen() {
 	const query = useGoals();
-	const openEditor = () => router.push('/goals/edit');
+	const isPro = useIsPro();
+	const openEditor = () => router.push(isPro ? '/goals/edit' : '/pro');
 
 	return (
 		<>

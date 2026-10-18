@@ -1,82 +1,82 @@
 {
-	"expo": {
-		"name": "PennyWise",
-		"slug": "pennywise",
-		"scheme": "pennywise",
-		"version": "2.0.0",
-		"orientation": "portrait",
-		"userInterfaceStyle": "automatic",
-		"icon": "./assets/images/icon.png",
-		"ios": {
-			"bundleIdentifier": "com.adityatripathi.penny-wise",
-			"buildNumber": "6",
-			"supportsTablet": false,
-			"infoPlist": {
-				"ITSAppUsesNonExemptEncryption": false
-			}
-		},
-		"android": {
-			"package": "com.adityatripathi.penny_wise",
-			"versionCode": 6,
-			"allowBackup": false,
-			"adaptiveIcon": {
-				"foregroundImage": "./assets/images/icon.png",
-				"backgroundColor": "#176B57"
-			},
-			"blockedPermissions": [
-				"android.permission.RECORD_AUDIO",
-				"android.permission.SYSTEM_ALERT_WINDOW"
-			]
-		},
-		"plugins": [
-			"expo-router",
-			[
-				"expo-sqlite",
-				{
-					"useSQLCipher": true
-				}
-			],
-			[
-				"expo-secure-store",
-				{
-					"configureAndroidBackup": true,
-					"faceIDPermission": "PennyWise uses Face ID to unlock your financial data."
-				}
-			],
-			[
-				"expo-local-authentication",
-				{
-					"faceIDPermission": "PennyWise uses Face ID to unlock your financial data."
-				}
-			],
-			[
-				"expo-image-picker",
-				{
-					"photosPermission": "PennyWise needs photo library access to attach receipt images to transactions.",
-					"cameraPermission": "PennyWise needs camera access to capture receipt photos.",
-					"microphonePermission": false
-				}
-			],
-			[
-				"expo-notifications",
-				{
-					"color": "#176B57"
-				}
-			],
-			"expo-sharing",
-			"expo-image",
-			"expo-status-bar",
-			"@react-native-community/datetimepicker"
-		],
-		"experiments": {
-			"typedRoutes": true
-		},
-		"extra": {
-			"router": {},
-			"eas": {
-				"projectId": "09bd6dbe-01f2-46c4-b087-24459f042972"
-			}
-		},
-		"owner": "adityatrips"
-	}
+  "expo": {
+    "name": "PennyWise",
+    "slug": "pennywise",
+    "scheme": "pennywise",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/images/icon.png",
+    "ios": {
+      "bundleIdentifier": "com.adityatripathi.penny-wise",
+      "buildNumber": "6",
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.adityatripathi.penny_wise",
+      "versionCode": 6,
+      "allowBackup": false,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#176B57"
+      },
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-sqlite",
+        {
+          "useSQLCipher": true
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "PennyWise uses Face ID to unlock your financial data."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "PennyWise uses Face ID to unlock your financial data."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "PennyWise needs photo library access to attach receipt images to transactions.",
+          "cameraPermission": "PennyWise needs camera access to capture receipt photos.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#176B57"
+        }
+      ],
+      "expo-sharing",
+      "expo-image",
+      "expo-status-bar",
+      "@react-native-community/datetimepicker"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "09bd6dbe-01f2-46c4-b087-24459f042972"
+      }
+    },
+    "owner": "adityatrips"
+  }
 }

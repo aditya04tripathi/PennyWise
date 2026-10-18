@@ -31,6 +31,7 @@ import {
 	countDue,
 	loadRecurringSchedules,
 } from '@/features/recurring/recurring-service';
+import { useIsPro } from '@/features/pro/pro-store';
 import { updateSettings } from '@/features/settings/settings-service';
 import {
 	useCategories,
@@ -53,6 +54,7 @@ export default function HomeScreen() {
 	const theme = useTheme();
 	const settings = useSettings();
 	const formatAmount = useMoneyFormatter();
+	const isPro = useIsPro();
 	const { byId: categories } = useCategories(true);
 	const overview = useLedgerQuery(
 		async (db) => {
@@ -240,7 +242,16 @@ export default function HomeScreen() {
 								onPress={() => router.push('/settings/budget')}
 							/>
 						)}
-						{overview.data.safeToSpend ? (
+						{overview.data.safeToSpend && !isPro ? (
+							<Button
+								label='See your safe-to-spend with Pro'
+								variant='ghost'
+								compact
+								icon='spark'
+								onPress={() => router.push('/pro')}
+							/>
+						) : null}
+						{overview.data.safeToSpend && isPro ? (
 							<SafeToSpendLine
 								safeToSpend={overview.data.safeToSpend}
 								formatAmount={formatAmount}

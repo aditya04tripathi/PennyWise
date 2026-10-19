@@ -1,20 +1,31 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { showMessage } from '@/components/feedback/confirm';
-import { LoadingState } from '@/components/feedback/states';
+import { ErrorState, LoadingState } from '@/components/feedback/states';
 import { Button } from '@/components/ui/button';
 import { Icon, type IconName } from '@/components/ui/icon';
+import { ListRow } from '@/components/ui/list-row';
 import { Screen } from '@/components/ui/screen';
-import { Surface } from '@/components/ui/surface';
+import { SegmentedControl } from '@/components/ui/segmented-control';
+import { Divider, Section, Surface } from '@/components/ui/surface';
 import { AppText } from '@/components/ui/text';
-import { useIsPro } from '@/features/pro/pro-store';
 import {
-	buyPro,
-	loadProOffer,
+	describeIntroOffer,
+	planPeriodLabel,
+	yearlySavingsPercent,
+	type ProBillingPeriod,
+	type ProPlan,
+} from '@/features/pro/plans';
+import { useIsPro, useProStore } from '@/features/pro/pro-store';
+import {
+	loadProCustomer,
+	loadProPlans,
+	presentCustomerCenter,
+	purchaseProPackage,
 	restorePro,
-	type ProOffer,
+	type ProCustomer,
 } from '@/features/pro/purchase-service';
 import { withAutoLockSuspended } from '@/features/security/use-app-lock';
 import { useTheme } from '@/theme/use-theme';
@@ -27,63 +38,103 @@ const PRO_BENEFITS: readonly {
 	{
 		icon: 'account',
 		title: 'Multiple accounts',
-		detail: 'Track cash, current, savings and credit accounts, with transfers between them.',
+		detail: 'Cash, current, savings and credit, with transfers between them.',
 	},
 	{
 		icon: 'goal',
 		title: 'Savings goals',
-		detail: 'Set targets and record what you put aside.',
+		detail: 'Set a target and record what you put aside.',
 	},
 	{
 		icon: 'category',
 		title: 'Category limits',
-		detail: 'Monthly limits per category, with progress and alerts.',
+		detail: 'A monthly limit per category, with progress and alerts.',
 	},
 	{
 		icon: 'spark',
 		title: 'Insights',
-		detail: 'Safe-to-spend per day and detection of repeating charges.',
+		detail: 'Safe-to-spend per day, and repeating charges spotted from your history.',
+	},
+	{
+		icon: 'close',
+		title: 'No ads',
+		detail: 'The banner on Home, Activity, Planning, Calendar and Settings goes away.',
 	},
 ];
 
-type OfferState =
-	| { status: 'loading' }
-	| { status: 'ready'; offer: ProOffer }
-	| { status: 'unavailable' };
+function planLabel(customer: ProCustomer): string {
+	const name = customer.productIdentifier ?? 'PennyWise Pro';
+	if (!customer.expiresAt) return `${name} · lifetime`;
+	const date = new Date(customer.expiresAt).toLocaleDateString();
+	return customer.willRenew
+		? `${name} · renews ${date}`
+		: `${name} · ends ${date}`;
+}
+
+function singleSubscription(plans: readonly ProPlan[]): ProPlan | null {
+	const monthly = plans.filter((plan) => plan.billingPeriod === 'monthly');
+	const yearly = plans.filter((plan) => plan.billingPeriod === 'yearly');
+	if (monthly.length + yearly.length !== 1) return null;
+	return monthly[0] ?? yearly[0] ?? null;
+}
 
 export default function ProScreen() {
 	const theme = useTheme();
 	const isPro = useIsPro();
-	const [offer, setOffer] = useState<OfferState>({ status: 'loading' });
-	const [busy, setBusy] = useState<'buy' | 'restore' | null>(null);
+	const store = useProStore((state) => state.store);
+	const [plans, setPlans] = useState<ProPlan[]>([]);
+	const [customer, setCustomer] = useState<ProCustomer | null>(null);
+	const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
+		'loading',
+	);
+	const [period, setPeriod] = useState<ProBillingPeriod>('yearly');
+	const [busy, setBusy] = useState<string | null>(null);
+
+	const load = useCallback(async () => {
+		setStatus('loading');
+		try {
+			const [loadedPlans, loadedCustomer] = await Promise.all([
+				isPro ? Promise.resolve([]) : loadProPlans(),
+				isPro ? loadProCustomer() : Promise.resolve(null),
+			]);
+			setPlans(loadedPlans);
+			setCustomer(loadedCustomer);
+			setStatus('ready');
+		} catch {
+			setStatus('error');
+		}
+	}, [isPro]);
 
 	useEffect(() => {
-		let cancelled = false;
-		loadProOffer()
-			.catch(() => null)
-			.then((loaded) => {
-				if (!cancelled)
-					setOffer(
-						loaded
-							? { status: 'ready', offer: loaded }
-							: { status: 'unavailable' },
-					);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, []);
+		load().catch(() => undefined);
+	}, [load]);
 
-	const buy = async () => {
-		setBusy('buy');
+	const monthly = plans.filter((plan) => plan.billingPeriod === 'monthly');
+	const yearly = plans.filter((plan) => plan.billingPeriod === 'yearly');
+	const canToggle = monthly.length === 1 && yearly.length === 1;
+	const featured = canToggle
+		? period === 'monthly'
+			? monthly[0]
+			: yearly[0]
+		: singleSubscription(plans);
+	const listed = featured
+		? plans.filter((plan) => plan.identifier !== featured.identifier)
+		: plans;
+	const savings =
+		canToggle && featured?.billingPeriod === 'yearly'
+			? yearlySavingsPercent(monthly[0]?.price ?? null, yearly[0]?.price ?? null)
+			: null;
+	const intro = featured?.introPrice
+		? describeIntroOffer(featured.introPrice)
+		: null;
+
+	const buy = async (packageIdentifier: string) => {
+		setBusy(packageIdentifier);
 		try {
-			const outcome = await withAutoLockSuspended(buyPro);
+			const outcome = await withAutoLockSuspended(() =>
+				purchaseProPackage(packageIdentifier),
+			);
 			if (outcome.kind === 'purchased') router.back();
-			else if (outcome.kind === 'pending')
-				showMessage(
-					'Purchase pending',
-					'Pro unlocks as soon as the store confirms the payment.',
-				);
 			else if (outcome.kind === 'failed')
 				showMessage('Purchase not completed', outcome.message);
 		} finally {
@@ -112,72 +163,185 @@ export default function ProScreen() {
 		}
 	};
 
+	const manage = async () => {
+		setBusy('manage');
+		try {
+			await withAutoLockSuspended(presentCustomerCenter);
+			await load();
+		} catch {
+			showMessage(
+				'Could not open subscription settings',
+				'Try again in a moment.',
+			);
+		} finally {
+			setBusy(null);
+		}
+	};
+
+	const purchaseLabel = featured
+		? featured.billingPeriod === 'yearly'
+			? 'Subscribe yearly'
+			: featured.billingPeriod === 'monthly'
+				? 'Subscribe monthly'
+				: planPeriodLabel(featured) === 'Lifetime'
+					? 'Buy lifetime'
+					: 'Continue'
+		: 'Continue';
+
 	return (
 		<Screen>
-			<View style={{ gap: theme.spacing.xs }}>
-				<AppText variant='heading1'>PennyWise Pro</AppText>
-				<AppText variant='body' tone='textSecondary'>
-					One payment, yours for good. Everything from PennyWise 1
-					stays free, and anything you have already entered stays
-					available even without Pro.
-				</AppText>
-			</View>
-			<Surface style={{ gap: theme.spacing.md }}>
-				{PRO_BENEFITS.map((benefit) => (
-					<View
-						key={benefit.title}
-						style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-						<Icon
-							name={benefit.icon}
-							size={20}
-							color={theme.colors.brandPrimary}
+			<AppText variant='body' tone='textSecondary'>
+				Everything from PennyWise 1 stays free, and anything you have
+				already entered stays available.
+			</AppText>
+			<Surface padded={false}>
+				{PRO_BENEFITS.map((benefit, index) => (
+					<View key={benefit.title}>
+						{index > 0 ? <Divider inset={60} /> : null}
+						<ListRow
+							icon={benefit.icon}
+							title={benefit.title}
+							subtitle={benefit.detail}
 						/>
-						<View style={{ flex: 1, gap: 2 }}>
-							<AppText variant='label'>{benefit.title}</AppText>
-							<AppText variant='bodySmall' tone='textSecondary'>
-								{benefit.detail}
-							</AppText>
-						</View>
 					</View>
 				))}
 			</Surface>
+
 			{isPro ? (
-				<AppText variant='bodyLarge' align='center'>
-					Pro is unlocked. Thank you.
+				<>
+					<AppText variant='bodyLarge' align='center' selectable>
+						{customer ? planLabel(customer) : 'Pro is unlocked.'}
+					</AppText>
+					<Button
+						label='Manage subscription'
+						icon='settings'
+						onPress={manage}
+						loading={busy === 'manage'}
+						disabled={busy !== null}
+						fullWidth
+					/>
+				</>
+			) : status === 'loading' ? (
+				<LoadingState label='Loading plans' />
+			) : status === 'error' ? (
+				<ErrorState
+					message='Plans could not be loaded.'
+					onRetry={() => {
+						load().catch(() => undefined);
+					}}
+				/>
+			) : store === 'unavailable' ? (
+				<AppText variant='body' tone='textSecondary' align='center'>
+					Purchases are not set up in this build.
 				</AppText>
-			) : offer.status === 'loading' ? (
-				<LoadingState label='Loading price' />
-			) : offer.status === 'ready' ? (
-				<Button
-					label={`Unlock Pro · ${offer.offer.displayPrice}`}
-					onPress={buy}
-					loading={busy === 'buy'}
-					disabled={busy !== null}
-					fullWidth
+			) : plans.length === 0 ? (
+				<ErrorState
+					message='Plans are not available right now.'
+					onRetry={() => {
+						load().catch(() => undefined);
+					}}
 				/>
 			) : (
-				<AppText
-					variant='bodySmall'
-					tone='textSecondary'
-					align='center'>
-					The store is not available right now, or this build is not
-					connected to the App Store or Google Play.
-				</AppText>
-			)}
-			{isPro ? null : (
-				<Button
-					label='Restore purchase'
-					variant='ghost'
-					onPress={restore}
-					loading={busy === 'restore'}
-					disabled={busy !== null}
-				/>
+				<>
+					{canToggle ? (
+						<SegmentedControl<ProBillingPeriod>
+							accessibilityLabel='Billing period'
+							value={period}
+							onChange={setPeriod}
+							options={[
+								{ value: 'monthly', label: 'Monthly' },
+								{ value: 'yearly', label: 'Yearly' },
+							]}
+						/>
+					) : null}
+					{featured ? (
+						<Surface style={{ gap: theme.spacing.xxs }}>
+							<AppText variant='label' tone='textSecondary'>
+								{planPeriodLabel(featured)}
+							</AppText>
+							<AppText variant='display' numeric selectable>
+								{featured.displayPrice}
+							</AppText>
+							<AppText variant='body' tone='textSecondary'>
+								{featured.billingPeriod === 'yearly'
+									? featured.pricePerMonthString
+										? `${featured.pricePerMonthString} a month, billed yearly`
+										: 'Billed once a year'
+									: featured.billingPeriod === 'monthly'
+										? 'Billed every month'
+										: featured.packageType === 'LIFETIME' ||
+											  planPeriodLabel(featured) ===
+													'Lifetime'
+											? 'One payment, no renewal'
+											: featured.title}
+							</AppText>
+							{intro ? (
+								<AppText variant='body' selectable>
+									{intro}
+								</AppText>
+							) : null}
+							{savings ? (
+								<AppText variant='body' tone='brandPrimary'>
+									Save {savings}% compared with monthly
+								</AppText>
+							) : null}
+						</Surface>
+					) : null}
+					{featured ? (
+						<Button
+							label={purchaseLabel}
+							onPress={() => buy(featured.identifier)}
+							loading={busy === featured.identifier}
+							disabled={busy !== null}
+							fullWidth
+						/>
+					) : null}
+					{listed.length > 0 ? (
+						<Section title={featured ? 'Also available' : 'Plans'}>
+							<Surface padded={false}>
+								{listed.map((plan, index) => {
+									const offer = plan.introPrice
+										? describeIntroOffer(plan.introPrice)
+										: null;
+									const lifetime =
+										plan.packageType === 'LIFETIME' ||
+										planPeriodLabel(plan) === 'Lifetime';
+									return (
+										<View key={plan.identifier}>
+											{index > 0 ? <Divider /> : null}
+											<ListRow
+												title={planPeriodLabel(plan)}
+												subtitle={
+													offer ??
+													(lifetime
+														? 'One payment, no renewal'
+														: undefined)
+												}
+												value={plan.displayPrice}
+												onPress={() =>
+													buy(plan.identifier)
+												}
+											/>
+										</View>
+									);
+								})}
+							</Surface>
+						</Section>
+					) : null}
+					<Button
+						label='Restore purchase'
+						variant='ghost'
+						onPress={restore}
+						loading={busy === 'restore'}
+						disabled={busy !== null}
+					/>
+				</>
 			)}
 			<AppText variant='caption' tone='textTertiary' align='center'>
-				Payment is handled by the App Store or Google Play. Purchase
-				status is checked through RevenueCat, which receives an
+				Payment is handled by the App Store or Google Play. PennyWise
+				checks purchase status through RevenueCat, which receives an
 				anonymous ID and your purchase receipt, never your financial
-				data.
+				data. Subscriptions renew until you cancel them in the store.
 			</AppText>
 		</Screen>
 	);

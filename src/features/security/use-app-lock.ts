@@ -8,16 +8,24 @@ import { useSession } from '../session/session-store';
 
 let suspensions = 0;
 
+export function suspendAutoLock(): void {
+	suspensions += 1;
+}
+
+export function resumeAutoLock(): void {
+	setTimeout(() => {
+		suspensions = Math.max(0, suspensions - 1);
+	}, 1000);
+}
+
 export async function withAutoLockSuspended<T>(
 	task: () => Promise<T>,
 ): Promise<T> {
-	suspensions += 1;
+	suspendAutoLock();
 	try {
 		return await task();
 	} finally {
-		setTimeout(() => {
-			suspensions -= 1;
-		}, 1000);
+		resumeAutoLock();
 	}
 }
 

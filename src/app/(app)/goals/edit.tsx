@@ -220,6 +220,7 @@ function GoalForm({ existing }: { existing: SavingsGoal | null }) {
 				<>
 					<DateTimeField
 						label='Target date'
+						mode='date'
 						value={`${targetDate}T00:00:00.000`}
 						onChange={(value) => setTargetDate(localDateOf(value))}
 					/>

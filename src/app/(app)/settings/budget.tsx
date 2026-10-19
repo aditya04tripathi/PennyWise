@@ -1,13 +1,12 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
 
 import { showMessage, userFacingError } from '@/components/feedback/confirm';
 import { Button } from '@/components/ui/button';
-import { Chip } from '@/components/ui/chip';
 import { ListRow } from '@/components/ui/list-row';
+import { MenuPicker } from '@/components/ui/menu-picker';
 import { Screen } from '@/components/ui/screen';
-import { Section, Surface } from '@/components/ui/surface';
+import { Surface } from '@/components/ui/surface';
 import { AppText } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { currencyExponent } from '@/domain/money/currency';
@@ -20,12 +19,10 @@ import {
 } from '@/features/notifications/local-notifications';
 import { updateSettings } from '@/features/settings/settings-service';
 import { useSettings } from '@/hooks/use-app-data';
-import { useTheme } from '@/theme/use-theme';
 
 const THRESHOLDS = [50, 75, 80, 90, 100] as const;
 
 export default function BudgetScreen() {
-	const theme = useTheme();
 	const settings = useSettings();
 	const exponent = currencyExponent(settings.currencyCode);
 	const [amount, setAmount] = useState(
@@ -91,23 +88,17 @@ export default function BudgetScreen() {
 				error={error}
 				hint='Total spending you want to stay under each calendar month.'
 			/>
-			<Section title='Alert me at'>
-				<View
-					style={{
-						flexDirection: 'row',
-						flexWrap: 'wrap',
-						gap: theme.spacing.xs,
-					}}>
-					{THRESHOLDS.map((value) => (
-						<Chip
-							key={value}
-							label={`${value}%`}
-							selected={threshold === value}
-							onPress={() => setThreshold(value)}
-						/>
-					))}
-				</View>
-			</Section>
+			<Surface padded={false}>
+				<MenuPicker
+					label='Alert me at'
+					value={threshold}
+					onChange={setThreshold}
+					options={THRESHOLDS.map((value) => ({
+						value,
+						label: `${value}%`,
+					}))}
+				/>
+			</Surface>
 			<Surface padded={false}>
 				<ListRow
 					icon='notifications'

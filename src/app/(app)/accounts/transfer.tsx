@@ -1,14 +1,13 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
 
 import { showMessage, userFacingError } from '@/components/feedback/confirm';
 import { LoadingState } from '@/components/feedback/states';
 import { DateTimeField } from '@/components/forms/date-time-field';
 import { Button } from '@/components/ui/button';
-import { Chip } from '@/components/ui/chip';
+import { MenuPicker } from '@/components/ui/menu-picker';
 import { Screen } from '@/components/ui/screen';
-import { Section } from '@/components/ui/surface';
+import { Surface } from '@/components/ui/surface';
 import { TextField } from '@/components/ui/text-field';
 import { toLocalDateTime } from '@/domain/dates';
 import { currencyExponent } from '@/domain/money/currency';
@@ -23,42 +22,11 @@ import {
 	useMoneyFormatter,
 	useSettings,
 } from '@/hooks/use-app-data';
-import { useTheme } from '@/theme/use-theme';
 
 export default function TransferScreen() {
 	const query = useAccounts();
 	if (query.status === 'loading') return <LoadingState />;
 	return <TransferForm accounts={query.accounts} />;
-}
-
-function AccountChips({
-	accounts,
-	value,
-	onChange,
-}: {
-	accounts: readonly AccountWithBalance[];
-	value: string;
-	onChange: (accountId: string) => void;
-}) {
-	const theme = useTheme();
-	const formatAmount = useMoneyFormatter();
-	return (
-		<View
-			style={{
-				flexDirection: 'row',
-				flexWrap: 'wrap',
-				gap: theme.spacing.xs,
-			}}>
-			{accounts.map((entry) => (
-				<Chip
-					key={entry.account.id}
-					label={`${entry.account.name} · ${formatAmount(entry.balanceMinor)}`}
-					selected={value === entry.account.id}
-					onPress={() => onChange(entry.account.id)}
-				/>
-			))}
-		</View>
-	);
 }
 
 function TransferForm({
@@ -67,6 +35,7 @@ function TransferForm({
 	accounts: readonly AccountWithBalance[];
 }) {
 	const { currencyCode } = useSettings();
+	const formatAmount = useMoneyFormatter();
 	const exponent = currencyExponent(currencyCode);
 	const [fromAccountId, setFrom] = useState(accounts[0]?.account.id ?? '');
 	const [toAccountId, setTo] = useState(accounts[1]?.account.id ?? '');
@@ -116,20 +85,28 @@ function TransferForm({
 				error={error}
 				autoFocus
 			/>
-			<Section title='From'>
-				<AccountChips
-					accounts={accounts}
+			<Surface padded={false}>
+				<MenuPicker
+					label='From'
 					value={fromAccountId}
 					onChange={setFrom}
+					options={accounts.map((entry) => ({
+						value: entry.account.id,
+						label: `${entry.account.name} · ${formatAmount(entry.balanceMinor)}`,
+					}))}
 				/>
-			</Section>
-			<Section title='To'>
-				<AccountChips
-					accounts={accounts}
+			</Surface>
+			<Surface padded={false}>
+				<MenuPicker
+					label='To'
 					value={toAccountId}
 					onChange={setTo}
+					options={accounts.map((entry) => ({
+						value: entry.account.id,
+						label: `${entry.account.name} · ${formatAmount(entry.balanceMinor)}`,
+					}))}
 				/>
-			</Section>
+			</Surface>
 			<DateTimeField
 				label='Date'
 				value={occurredAt}

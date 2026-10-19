@@ -1,12 +1,15 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { CategoryBadge } from '@/components/finance/category-badge';
+import { ColorSwatches } from '@/components/forms/color-swatches';
 import { showMessage, userFacingError } from '@/components/feedback/confirm';
 import { LoadingState } from '@/components/feedback/states';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
+import { PressableScale } from '@/components/ui/pressable-scale';
+import { selectionHaptic } from '@/components/ui/selection-haptic';
 import { Screen } from '@/components/ui/screen';
 import { Section } from '@/components/ui/surface';
 import { TextField } from '@/components/ui/text-field';
@@ -140,13 +143,16 @@ function CategoryForm({ existing }: { existing: Category | null }) {
 					}}
 					accessibilityRole='radiogroup'>
 					{CATEGORY_ICONS.map((option) => (
-						<Pressable
+						<PressableScale
 							key={option}
 							accessibilityRole='radio'
 							accessibilityLabel={option}
 							accessibilityState={{ selected: icon === option }}
-							onPress={() => setIcon(option)}
-							style={{
+							onPress={() => {
+								selectionHaptic();
+								setIcon(option);
+							}}
+							contentStyle={{
 								width: 48,
 								height: 48,
 								borderRadius: theme.radii.md,
@@ -164,44 +170,16 @@ function CategoryForm({ existing }: { existing: Category | null }) {
 								size={20}
 								color={theme.colors.textPrimary}
 							/>
-						</Pressable>
+						</PressableScale>
 					))}
 				</View>
 			</Section>
 			<Section title='Colour'>
-				<View
-					style={{
-						flexDirection: 'row',
-						flexWrap: 'wrap',
-						gap: theme.spacing.xs,
-					}}
-					accessibilityRole='radiogroup'>
-					{CATEGORY_COLORS.map((option, index) => (
-						<Pressable
-							key={option}
-							accessibilityRole='radio'
-							accessibilityLabel={`Colour ${index + 1}`}
-							accessibilityState={{ selected: color === option }}
-							onPress={() => setColor(option)}
-							style={{
-								width: 44,
-								height: 44,
-								borderRadius: 22,
-								backgroundColor: option,
-								alignItems: 'center',
-								justifyContent: 'center',
-								borderWidth: 3,
-								borderColor:
-									color === option
-										? theme.colors.textPrimary
-										: 'transparent',
-							}}>
-							{color === option ? (
-								<Icon name='check' size={16} color='#FFFFFF' />
-							) : null}
-						</Pressable>
-					))}
-				</View>
+				<ColorSwatches
+					colors={CATEGORY_COLORS}
+					value={color}
+					onChange={setColor}
+				/>
 			</Section>
 			<Button
 				label={existing ? 'Save changes' : 'Add category'}

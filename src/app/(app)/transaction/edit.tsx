@@ -4,15 +4,16 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 
-import { CategoryBadge } from '@/components/finance/category-badge';
-import { DateTimeField } from '@/components/forms/date-time-field';
 import { showMessage, userFacingError } from '@/components/feedback/confirm';
 import { LoadingState } from '@/components/feedback/states';
+import { CategoryBadge } from '@/components/finance/category-badge';
+import { DateTimeField } from '@/components/forms/date-time-field';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
+import { MenuPicker } from '@/components/ui/menu-picker';
 import { Screen } from '@/components/ui/screen';
 import { SegmentedControl } from '@/components/ui/segmented-control';
-import { Section, Surface } from '@/components/ui/surface';
+import { Divider, Section, Surface } from '@/components/ui/surface';
 import { AppText } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { findTransaction } from '@/data/repositories/transaction-repository';
@@ -31,8 +32,8 @@ import { formatMoneyInput } from '@/domain/money/format';
 import { describeRecurrence } from '@/domain/recurrence';
 import type { TransactionDraftErrors } from '@/domain/validation/transaction-draft';
 import {
-	storeReceipt,
 	deleteReceiptFiles,
+	storeReceipt,
 } from '@/features/receipts/receipt-files';
 import { withAutoLockSuspended } from '@/features/security/use-app-lock';
 import { requireDatabase } from '@/features/session/session-store';
@@ -268,7 +269,7 @@ function TransactionForm({
 					autoFocus={!existing}
 					error={errors.amount}
 					style={{
-						fontSize: 28,
+						fontSize: 22,
 						fontWeight: '600',
 						fontVariant: ['tabular-nums'],
 					}}
@@ -331,108 +332,87 @@ function TransactionForm({
 					) : null}
 				</Section>
 
-				<Surface>
+				<Surface padded={false}>
 					<DateTimeField
 						label='Date'
 						value={occurredAt}
 						onChange={setOccurredAt}
 					/>
-					{occurredAt > toLocalDateTime(new Date()) ? (
-						<AppText variant='bodySmall' tone='textSecondary'>
-							Future-dated transactions are shown as scheduled and
-							are not counted in your balance until then.
-						</AppText>
-					) : null}
-				</Surface>
-
-				{!isOccurrence ? (
-					<Section title='Repeat'>
-						<View
-							style={{
-								flexDirection: 'row',
-								flexWrap: 'wrap',
-								gap: theme.spacing.xs,
-							}}>
-							{(
-								[
-									'none',
-									'daily',
-									'weekly',
-									'monthly',
-									'yearly',
-								] as const
-							).map((option) => (
-								<Chip
-									key={option}
-									label={
+					{!isOccurrence ? (
+						<>
+							<Divider inset={16} />
+							<MenuPicker
+								label='Repeats'
+								value={repeat}
+								onChange={setRepeat}
+								options={(
+									[
+										'none',
+										'daily',
+										'weekly',
+										'monthly',
+										'yearly',
+									] as const
+								).map((option) => ({
+									value: option,
+									label:
 										option === 'none'
 											? 'Never'
 											: option[0]!.toUpperCase() +
-												option.slice(1)
-									}
-									selected={repeat === option}
-									onPress={() => setRepeat(option)}
-								/>
-							))}
-						</View>
-						{recurrence ? (
-							<AppText variant='bodySmall' tone='textSecondary'>
-								{describeRecurrence(recurrence)}, starting{' '}
-								{localDateOf(occurredAt)}. Each occurrence is
-								added only when you confirm it under Recurring.
-							</AppText>
-						) : null}
-						{errors.recurrence ? (
-							<AppText variant='bodySmall' tone='negative'>
-								{errors.recurrence}
-							</AppText>
-						) : null}
-					</Section>
-				) : null}
-
-				{accounts.length > 1 ? (
-					<Section title='Account'>
-						<View
-							style={{
-								flexDirection: 'row',
-								flexWrap: 'wrap',
-								gap: theme.spacing.xs,
-							}}>
-							{accounts.map(({ account }) => (
-								<Chip
-									key={account.id}
-									label={account.name}
-									selected={accountId === account.id}
-									onPress={() => setAccountId(account.id)}
-								/>
-							))}
-						</View>
-					</Section>
-				) : null}
-
-				{cards.length > 0 ? (
-					<Section title='Card (optional)'>
-						<View
-							style={{
-								flexDirection: 'row',
-								flexWrap: 'wrap',
-								gap: theme.spacing.xs,
-							}}>
-							<Chip
-								label='None'
-								selected={cardId === null}
-								onPress={() => setCardId(null)}
+												option.slice(1),
+								}))}
 							/>
-							{cards.map((card) => (
-								<Chip
-									key={card.id}
-									label={`${card.bankName} ·${card.lastFour}`}
-									selected={cardId === card.id}
-									onPress={() => setCardId(card.id)}
-								/>
-							))}
-						</View>
-					</Section>
+						</>
+					) : null}
+					{accounts.length > 1 ? (
+						<>
+							<Divider inset={16} />
+							<MenuPicker
+								label='Account'
+								value={accountId}
+								onChange={setAccountId}
+								options={accounts.map(({ account }) => ({
+									value: account.id,
+									label: account.name,
+								}))}
+							/>
+						</>
+					) : null}
+					{cards.length > 0 ? (
+						<>
+							<Divider inset={16} />
+							<MenuPicker
+								label='Card'
+								value={cardId ?? ''}
+								onChange={(id) => setCardId(id || null)}
+								options={[
+									{ value: '', label: 'None' },
+									...cards.map((card) => ({
+										value: card.id,
+										label: `${card.bankName} · ${card.lastFour}`,
+									})),
+								]}
+							/>
+						</>
+					) : null}
+				</Surface>
+				{occurredAt > toLocalDateTime(new Date()) ? (
+					<AppText variant='bodySmall' tone='textSecondary'>
+						Future-dated transactions are shown as scheduled and are
+						not counted in your balance until then.
+					</AppText>
+				) : null}
+				{!isOccurrence && recurrence ? (
+					<AppText variant='bodySmall' tone='textSecondary'>
+						{describeRecurrence(recurrence)}, starting{' '}
+						{localDateOf(occurredAt)}. Each occurrence is added only
+						when you confirm it under Recurring.
+					</AppText>
+				) : null}
+				{errors.recurrence ? (
+					<AppText variant='bodySmall' tone='negative' selectable>
+						{errors.recurrence}
+					</AppText>
 				) : null}
 
 				<Section title='Receipt'>

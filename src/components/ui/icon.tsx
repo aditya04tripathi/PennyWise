@@ -29,6 +29,7 @@ const ICONS = {
 	search: ['magnifyingglass', 'search'],
 	chevronRight: ['chevron.right', 'chevron_right'],
 	chevronLeft: ['chevron.left', 'chevron_left'],
+	chevronUpDown: ['chevron.up.chevron.down', 'arrow_drop_down'],
 	check: ['checkmark', 'check'],
 	close: ['xmark', 'close'],
 	warning: ['exclamationmark.triangle.fill', 'warning'],

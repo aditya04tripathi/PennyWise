@@ -1,8 +1,8 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
 
 import { CardTile, NETWORK_LABELS } from '@/components/finance/card-tile';
+import { ColorSwatches } from '@/components/forms/color-swatches';
 import {
 	confirmAction,
 	showMessage,
@@ -10,10 +10,9 @@ import {
 } from '@/components/feedback/confirm';
 import { LoadingState } from '@/components/feedback/states';
 import { Button } from '@/components/ui/button';
-import { Chip } from '@/components/ui/chip';
-import { Icon } from '@/components/ui/icon';
+import { MenuPicker } from '@/components/ui/menu-picker';
 import { Screen } from '@/components/ui/screen';
-import { Section } from '@/components/ui/surface';
+import { Section, Surface } from '@/components/ui/surface';
 import { AppText } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import type { CardNetwork, PaymentCard } from '@/domain/entities';
@@ -25,7 +24,6 @@ import {
 	type CardInputErrors,
 } from '@/features/catalog/catalog-service';
 import { useCards } from '@/hooks/use-app-data';
-import { useTheme } from '@/theme/use-theme';
 
 const CARD_COLORS = [
 	'#1F2937',
@@ -44,7 +42,6 @@ export default function CardEditScreen() {
 }
 
 function CardForm({ existing }: { existing: PaymentCard | null }) {
-	const theme = useTheme();
 	const [bankName, setBankName] = useState(existing?.bankName ?? '');
 	const [holderName, setHolderName] = useState(existing?.holderName ?? '');
 	const [lastFour, setLastFour] = useState(existing?.lastFour ?? '');
@@ -120,62 +117,28 @@ function CardForm({ existing }: { existing: PaymentCard | null }) {
 				autoComplete='off'
 				textContentType='none'
 			/>
-			<Section title='Network'>
-				<View
-					style={{
-						flexDirection: 'row',
-						flexWrap: 'wrap',
-						gap: theme.spacing.xs,
-					}}>
-					{(Object.keys(NETWORK_LABELS) as CardNetwork[]).map(
-						(option) => (
-							<Chip
-								key={option}
-								label={
-									option === 'other'
-										? 'Other'
-										: NETWORK_LABELS[option]
-								}
-								selected={network === option}
-								onPress={() => setNetwork(option)}
-							/>
-						),
+			<Surface padded={false}>
+				<MenuPicker
+					label='Network'
+					value={network}
+					onChange={setNetwork}
+					options={(Object.keys(NETWORK_LABELS) as CardNetwork[]).map(
+						(option) => ({
+							value: option,
+							label:
+								option === 'other'
+									? 'Other'
+									: NETWORK_LABELS[option],
+						}),
 					)}
-				</View>
-			</Section>
+				/>
+			</Surface>
 			<Section title='Colour'>
-				<View
-					style={{
-						flexDirection: 'row',
-						flexWrap: 'wrap',
-						gap: theme.spacing.xs,
-					}}>
-					{CARD_COLORS.map((option, index) => (
-						<Pressable
-							key={option}
-							accessibilityRole='radio'
-							accessibilityLabel={`Colour ${index + 1}`}
-							accessibilityState={{ selected: color === option }}
-							onPress={() => setColor(option)}
-							style={{
-								width: 44,
-								height: 44,
-								borderRadius: 22,
-								backgroundColor: option,
-								alignItems: 'center',
-								justifyContent: 'center',
-								borderWidth: 3,
-								borderColor:
-									color === option
-										? theme.colors.brandPrimary
-										: 'transparent',
-							}}>
-							{color === option ? (
-								<Icon name='check' size={16} color='#FFFFFF' />
-							) : null}
-						</Pressable>
-					))}
-				</View>
+				<ColorSwatches
+					colors={CARD_COLORS}
+					value={color}
+					onChange={setColor}
+				/>
 			</Section>
 			<Button
 				label={existing ? 'Save changes' : 'Add card'}

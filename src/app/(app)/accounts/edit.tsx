@@ -10,9 +10,9 @@ import {
 import { LoadingState } from '@/components/feedback/states';
 import { ColorSwatches } from '@/components/forms/color-swatches';
 import { Button } from '@/components/ui/button';
-import { Chip } from '@/components/ui/chip';
+import { MenuPicker } from '@/components/ui/menu-picker';
 import { Screen } from '@/components/ui/screen';
-import { Section } from '@/components/ui/surface';
+import { Section, Surface } from '@/components/ui/surface';
 import { AppText } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import {
@@ -121,25 +121,19 @@ function AccountForm({ existing }: { existing: Account | null }) {
 				error={errors.name}
 				autoFocus={!existing}
 			/>
-			<Section title='Type'>
-				<View
-					style={{
-						flexDirection: 'row',
-						flexWrap: 'wrap',
-						gap: theme.spacing.xs,
-					}}>
-					{(Object.keys(ACCOUNT_KIND_LABELS) as AccountKind[]).map(
-						(option) => (
-							<Chip
-								key={option}
-								label={ACCOUNT_KIND_LABELS[option]}
-								selected={kind === option}
-								onPress={() => setKind(option)}
-							/>
-						),
-					)}
-				</View>
-			</Section>
+			<Surface padded={false}>
+				<MenuPicker
+					label='Type'
+					value={kind}
+					onChange={setKind}
+					options={(
+						Object.keys(ACCOUNT_KIND_LABELS) as AccountKind[]
+					).map((option) => ({
+						value: option,
+						label: ACCOUNT_KIND_LABELS[option],
+					}))}
+				/>
+			</Surface>
 			<TextField
 				label='Opening balance'
 				value={opening}

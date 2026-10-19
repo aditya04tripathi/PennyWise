@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
 
 import { confirmAction, showMessage } from '@/components/feedback/confirm';
 import { Button } from '@/components/ui/button';
-import { Chip } from '@/components/ui/chip';
 import { ListRow } from '@/components/ui/list-row';
+import { MenuPicker } from '@/components/ui/menu-picker';
 import { Screen } from '@/components/ui/screen';
 import { Divider, Section, Surface } from '@/components/ui/surface';
 import { Sheet } from '@/components/ui/sheet';
@@ -21,7 +20,6 @@ import { Reauthenticate } from '@/features/security/reauthenticate';
 import { useSession } from '@/features/session/session-store';
 import { updateSettings } from '@/features/settings/settings-service';
 import { useSettings } from '@/hooks/use-app-data';
-import { useTheme } from '@/theme/use-theme';
 
 interface PinFlow {
 	purpose: 'change' | 'turn-off';
@@ -36,7 +34,6 @@ const AUTO_LOCK_OPTIONS = [
 ] as const;
 
 export default function SecurityScreen() {
-	const theme = useTheme();
 	const settings = useSettings();
 	const security = useSession((state) => state.security);
 	const setSecurity = useSession((state) => state.setSecurity);
@@ -173,27 +170,19 @@ export default function SecurityScreen() {
 
 			{security.pinEnabled ? (
 				<Section title='Lock when leaving the app'>
-					<View
-						style={{
-							flexDirection: 'row',
-							flexWrap: 'wrap',
-							gap: theme.spacing.xs,
-						}}>
-						{AUTO_LOCK_OPTIONS.map((option) => (
-							<Chip
-								key={option.seconds}
-								label={option.label}
-								selected={
-									settings.autoLockSeconds === option.seconds
-								}
-								onPress={() =>
-									updateSettings({
-										autoLockSeconds: option.seconds,
-									})
-								}
-							/>
-						))}
-					</View>
+					<Surface padded={false}>
+						<MenuPicker
+							label='After'
+							value={settings.autoLockSeconds}
+							onChange={(seconds) =>
+								updateSettings({ autoLockSeconds: seconds })
+							}
+							options={AUTO_LOCK_OPTIONS.map((option) => ({
+								value: option.seconds,
+								label: option.label,
+							}))}
+						/>
+					</Surface>
 					<AppText variant='bodySmall' tone='textSecondary'>
 						While the app lock is on, PennyWise hides its contents
 						in the app switcher.

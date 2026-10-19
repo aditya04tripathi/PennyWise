@@ -1,15 +1,17 @@
 import { router } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
-import { BudgetMeter } from '@/components/finance/budget-meter';
-import { TransactionRow } from '@/components/finance/transaction-row';
+import { FreeBanner } from '@/components/ads/free-banner';
 import {
 	EmptyState,
 	ErrorState,
 	LoadingState,
 } from '@/components/feedback/states';
+import { BudgetMeter } from '@/components/finance/budget-meter';
+import { TransactionRow } from '@/components/finance/transaction-row';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
+import { IconButton } from '@/components/ui/icon-button';
 import { ListRow } from '@/components/ui/list-row';
 import { Screen } from '@/components/ui/screen';
 import { Divider, Section, Surface } from '@/components/ui/surface';
@@ -25,13 +27,14 @@ import {
 } from '@/domain/calculations/insights';
 import { summarizeLedger } from '@/domain/calculations/ledger';
 import { toLocalDateTime } from '@/domain/dates';
+import { sumMinor } from '@/domain/money/money';
 import { loadAccountBalances } from '@/features/accounts/account-service';
 import { upcomingRecurringExpenseThisMonth } from '@/features/insights/insights-service';
+import { useIsPro } from '@/features/pro/pro-store';
 import {
 	countDue,
 	loadRecurringSchedules,
 } from '@/features/recurring/recurring-service';
-import { useIsPro } from '@/features/pro/pro-store';
 import { updateSettings } from '@/features/settings/settings-service';
 import {
 	useCategories,
@@ -40,6 +43,7 @@ import {
 	type MoneyFormatter,
 } from '@/hooks/use-app-data';
 import { useLedgerQuery } from '@/hooks/use-ledger-query';
+import { countLabel } from '@/lib/count-label';
 import { formatMonth } from '@/lib/format-date';
 import { useTheme } from '@/theme/use-theme';
 
@@ -48,6 +52,14 @@ function greeting(date: Date): string {
 	if (hour < 12) return 'Good morning';
 	if (hour < 18) return 'Good afternoon';
 	return 'Good evening';
+}
+
+function accountTotal(
+	accounts: readonly { balanceMinor: number }[],
+	ledgerBalance: number,
+): number {
+	if (accounts.length === 0) return ledgerBalance;
+	return sumMinor(accounts.map((entry) => entry.balanceMinor));
 }
 
 export default function HomeScreen() {
@@ -97,55 +109,36 @@ export default function HomeScreen() {
 
 	return (
 		<Screen
+			footer={<FreeBanner />}
 			topInset
+			tabBarInset
 			subtitle={`${greeting(nowDate)}${settings.name ? `, ${settings.name}` : ''}`}
 			title='Overview'
 			headerAction={
 				<View style={{ flexDirection: 'row', gap: theme.spacing.xs }}>
-					<Pressable
-						accessibilityRole='button'
-						accessibilityLabel={
+					<IconButton
+						label={
 							settings.hideAmounts
 								? 'Show amounts'
 								: 'Hide amounts'
 						}
+						icon={settings.hideAmounts ? 'hidden' : 'visible'}
+						color={theme.colors.textSecondary}
+						backgroundColor={theme.colors.surface}
 						onPress={() =>
 							updateSettings({
 								hideAmounts: !settings.hideAmounts,
 							})
 						}
-						style={{
-							width: 44,
-							height: 44,
-							borderRadius: 22,
-							alignItems: 'center',
-							justifyContent: 'center',
-							backgroundColor: theme.colors.surface,
-						}}>
-						<Icon
-							name={settings.hideAmounts ? 'hidden' : 'visible'}
-							size={18}
-							color={theme.colors.textSecondary}
-						/>
-					</Pressable>
-					<Pressable
-						accessibilityRole='button'
-						accessibilityLabel='Add transaction'
+					/>
+					<IconButton
+						label='Add transaction'
+						icon='add'
+						iconSize={20}
+						color={theme.colors.textOnBrand}
+						backgroundColor={theme.colors.brandPrimary}
 						onPress={addTransaction}
-						style={{
-							width: 44,
-							height: 44,
-							borderRadius: 22,
-							alignItems: 'center',
-							justifyContent: 'center',
-							backgroundColor: theme.colors.brandPrimary,
-						}}>
-						<Icon
-							name='add'
-							size={20}
-							color={theme.colors.textOnBrand}
-						/>
-					</Pressable>
+					/>
 				</View>
 			}>
 			{overview.status === 'loading' ? <LoadingState /> : null}
@@ -171,13 +164,16 @@ export default function HomeScreen() {
 								numeric
 								adjustsFontSizeToFit
 								numberOfLines={1}
-								accessibilityLabel={`Balance ${formatAmount(overview.data.summary.balanceMinor)}`}>
+								accessibilityLabel={`Balance ${formatAmount(accountTotal(overview.data.accounts, overview.data.summary.balanceMinor))}`}>
 								{formatAmount(
-									overview.data.summary.balanceMinor,
+									accountTotal(
+										overview.data.accounts,
+										overview.data.summary.balanceMinor,
+									),
 								)}
 							</AppText>
 							<AppText variant='bodySmall' tone='textTertiary'>
-								All income minus all expenses to date
+								Across your accounts
 							</AppText>
 						</View>
 						<Divider />
@@ -319,8 +315,6 @@ export default function HomeScreen() {
 									icon='activity'
 									title='No transactions yet'
 									message='Record your first income or expense to see your balance and spending here.'
-									actionLabel='Add transaction'
-									onAction={addTransaction}
 								/>
 							) : (
 								overview.data.recent.map(
@@ -384,7 +378,7 @@ function SafeToSpendLine({
 			accessibilityLabel={
 				overspent
 					? `Nothing left to spend from ${basisLabel} this month`
-					: `Safe to spend ${formatAmount(safeToSpend.dailyMinor)} per day for ${safeToSpend.daysRemaining} days`
+					: `Safe to spend ${formatAmount(safeToSpend.dailyMinor)} per day for ${countLabel(safeToSpend.daysRemaining, 'day')}`
 			}>
 			<AppText variant='label' tone='textSecondary'>
 				Safe to spend
@@ -397,7 +391,7 @@ function SafeToSpendLine({
 			<AppText variant='caption' tone='textTertiary'>
 				{overspent
 					? `You've used all of ${basisLabel} for this month, including upcoming recurring payments.`
-					: `Based on ${basisLabel}, after spending so far and recurring payments still due, over the ${safeToSpend.daysRemaining} days left.`}
+					: `Based on ${basisLabel}, after spending so far and recurring payments still due, over the ${countLabel(safeToSpend.daysRemaining, 'day')} left.`}
 			</AppText>
 		</View>
 	);

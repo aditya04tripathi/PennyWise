@@ -19,11 +19,13 @@ interface SessionState {
 	unlocked: boolean;
 	dataVersion: number;
 	backgroundedAt: number | null;
+	previousDataNotice: 'fresh-start' | 'legacy-removed' | null;
 	setReady(
 		database: SqlDatabase,
 		encrypted: boolean,
 		settings: UserSettings,
 		security: SecurityConfiguration,
+		previousDataNotice?: 'fresh-start' | 'legacy-removed' | null,
 	): void;
 	setFailed(failure: DatabaseOpenFailure): void;
 	setSettings(settings: UserSettings): void;
@@ -32,6 +34,7 @@ interface SessionState {
 	lock(): void;
 	markBackgrounded(at: number | null): void;
 	notifyDataChanged(): void;
+	notePreviousDataRemoved(notice: 'fresh-start' | 'legacy-removed'): void;
 	reset(): void;
 }
 
@@ -44,7 +47,14 @@ export const useSession = create<SessionState>((set) => ({
 	unlocked: false,
 	dataVersion: 0,
 	backgroundedAt: null,
-	setReady: (database, encrypted, settings, security) =>
+	previousDataNotice: null,
+	setReady: (
+		database,
+		encrypted,
+		settings,
+		security,
+		previousDataNotice = null,
+	) =>
 		set({
 			boot: { kind: 'ready' },
 			database,
@@ -52,6 +62,7 @@ export const useSession = create<SessionState>((set) => ({
 			settings,
 			security,
 			unlocked: !security.pinEnabled && !security.biometricEnabled,
+			previousDataNotice,
 		}),
 	setFailed: (failure) => set({ boot: { kind: 'failed', failure } }),
 	setSettings: (settings) => set({ settings }),
@@ -66,6 +77,8 @@ export const useSession = create<SessionState>((set) => ({
 	markBackgrounded: (at) => set({ backgroundedAt: at }),
 	notifyDataChanged: () =>
 		set((state) => ({ dataVersion: state.dataVersion + 1 })),
+	notePreviousDataRemoved: (previousDataNotice) =>
+		set({ previousDataNotice }),
 	reset: () =>
 		set({
 			boot: { kind: 'booting' },
@@ -74,6 +87,7 @@ export const useSession = create<SessionState>((set) => ({
 			security: { pinEnabled: false, biometricEnabled: false },
 			unlocked: false,
 			dataVersion: 0,
+			previousDataNotice: null,
 		}),
 }));
 

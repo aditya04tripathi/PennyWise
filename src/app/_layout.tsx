@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { showMessage } from '@/components/feedback/confirm';
 import { DatabaseErrorScreen } from '@/components/feedback/database-error';
 import { PrivacyOverlay } from '@/components/feedback/privacy-overlay';
 import { LoadingState } from '@/components/feedback/states';
@@ -15,6 +16,7 @@ import {
 	eraseAllLocalData,
 } from '@/features/session/bootstrap';
 import { useSession } from '@/features/session/session-store';
+import { applyNativeAppearance } from '@/theme/native-appearance';
 import { useTheme } from '@/theme/use-theme';
 
 export default function RootLayout() {
@@ -28,16 +30,30 @@ export default function RootLayout() {
 function AppShell() {
 	const theme = useTheme();
 	const boot = useSession((state) => state.boot);
-	const onboarded = useSession(
-		(state) => state.settings?.onboardingCompleted ?? false,
-	);
+	const previousDataNotice = useSession((state) => state.previousDataNotice);
+	const onboarded =
+		useSession((state) => state.settings?.onboardingCompleted ?? false) &&
+		false;
 	const unlocked = useSession((state) => state.unlocked);
+	const appearance = useSession((state) => state.settings?.appearance ?? null);
 	const { obscured } = useAppLock();
 
 	useEffect(() => {
 		bootstrapSession();
 		configureNotifications().catch(() => undefined);
 	}, []);
+
+	useEffect(() => {
+		if (boot.kind !== 'ready' || previousDataNotice !== 'legacy-removed')
+			return;
+		showMessage(
+			'Older data was removed',
+			'Data from the previous version of PennyWise was still on this device. It was deleted. What you have saved in this version was kept.',
+		);
+		useSession.setState({ previousDataNotice: null });
+	}, [boot.kind, previousDataNotice]);
+
+	if (appearance) applyNativeAppearance(appearance);
 
 	const navigationTheme = theme.dark
 		? {
@@ -108,7 +124,12 @@ function AppShell() {
 
 	return (
 		<ThemeProvider value={navigationTheme}>
-			<StatusBar style={theme.dark ? 'light' : 'dark'} />
+			<StatusBar
+				style={theme.dark ? 'light' : 'dark'}
+				translucent
+				backgroundColor='transparent'
+				animated
+			/>
 			{content}
 			{obscured ? <PrivacyOverlay /> : null}
 		</ThemeProvider>

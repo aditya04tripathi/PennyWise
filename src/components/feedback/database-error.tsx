@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { AppText } from '@/components/ui/text';
 import type { DatabaseOpenFailure } from '@/data/database/open-encrypted-database';
+import { useSession } from '@/features/session/session-store';
 import { useTheme } from '@/theme/use-theme';
 
 import { confirmAction } from './confirm';
@@ -34,6 +35,11 @@ const MESSAGES: Record<
 		body: 'Your data was left unchanged. Update to the latest version of PennyWise and try again.',
 		canReset: false,
 	},
+	unreadable: {
+		title: 'PennyWise could not start',
+		body: 'The data already on this device could not be opened, so it was removed. Close the app and try again.',
+		canReset: false,
+	},
 	unknown: {
 		title: 'PennyWise could not start',
 		body: 'Your data was left unchanged. Close the app and try again.',
@@ -51,8 +57,14 @@ export function DatabaseErrorScreen({
 	onReset: () => Promise<void>;
 }) {
 	const theme = useTheme();
+	const insets = useSafeAreaInsets();
 	const [busy, setBusy] = useState(false);
+	const previousDataRemoved =
+		useSession((state) => state.previousDataNotice) === 'fresh-start';
 	const message = MESSAGES[failure];
+	const body = previousDataRemoved
+		? 'Data already stored on this device could not be opened, so it was removed. PennyWise still could not start. Close the app and try again.'
+		: message.body;
 
 	const run = async (action: () => Promise<void>) => {
 		setBusy(true);
@@ -64,8 +76,13 @@ export function DatabaseErrorScreen({
 	};
 
 	return (
-		<SafeAreaView
-			style={{ flex: 1, backgroundColor: theme.colors.background }}>
+		<View
+			style={{
+				flex: 1,
+				backgroundColor: theme.colors.background,
+				paddingTop: insets.top,
+				paddingBottom: insets.bottom,
+			}}>
 			<View
 				style={{
 					flex: 1,
@@ -76,8 +93,8 @@ export function DatabaseErrorScreen({
 				accessibilityRole='alert'>
 				<Icon name='warning' size={36} color={theme.colors.warning} />
 				<AppText variant='heading1'>{message.title}</AppText>
-				<AppText variant='bodyLarge' tone='textSecondary'>
-					{message.body}
+				<AppText variant='bodyLarge' tone='textSecondary' selectable>
+					{body}
 				</AppText>
 				<Button
 					label='Try again'
@@ -104,6 +121,6 @@ export function DatabaseErrorScreen({
 					/>
 				) : null}
 			</View>
-		</SafeAreaView>
+		</View>
 	);
 }

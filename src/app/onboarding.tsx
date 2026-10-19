@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { showMessage, userFacingError } from '@/components/feedback/confirm';
 import { CurrencyPicker } from '@/components/forms/currency-picker';
@@ -30,11 +30,14 @@ type Step = 'welcome' | 'profile' | 'security' | 'pin' | 'biometric';
 
 export default function OnboardingScreen() {
 	const theme = useTheme();
+	const insets = useSafeAreaInsets();
 	const [step, setStep] = useState<Step>('welcome');
 	const [name, setName] = useState('');
 	const [currency, setCurrency] = useState(() => guessCurrency());
 	const [pickingCurrency, setPickingCurrency] = useState(false);
 	const [busy, setBusy] = useState(false);
+	const previousDataRemoved =
+		useSession((state) => state.previousDataNotice) === 'fresh-start';
 	const backup = useBackupFlow({
 		hasExistingData: false,
 		onCompleted: () =>
@@ -88,12 +91,14 @@ export default function OnboardingScreen() {
 
 	if (step === 'pin') {
 		return (
-			<SafeAreaView
+			<View
 				style={{
 					flex: 1,
 					backgroundColor: theme.colors.background,
 					justifyContent: 'center',
 					padding: theme.spacing.lg,
+					paddingTop: insets.top + theme.spacing.lg,
+					paddingBottom: insets.bottom + theme.spacing.lg,
 				}}>
 				<PinSetup onComplete={savePin} />
 				<Button
@@ -101,7 +106,7 @@ export default function OnboardingScreen() {
 					variant='ghost'
 					onPress={() => setStep('security')}
 				/>
-			</SafeAreaView>
+			</View>
 		);
 	}
 
@@ -136,6 +141,19 @@ export default function OnboardingScreen() {
 							encrypted. No account, no cloud, no tracking.
 						</AppText>
 					</View>
+					{previousDataRemoved ? (
+						<Surface>
+							<View style={{ gap: theme.spacing.xs }}>
+								<AppText variant='heading2'>
+									Started empty
+								</AppText>
+								<AppText variant='body' tone='textSecondary'>
+									Data already on this device was not loaded.
+									Import a backup below if you have one.
+								</AppText>
+							</View>
+						</Surface>
+					) : null}
 					<View style={{ gap: theme.spacing.xs }}>
 						<Button
 							label='Get started'

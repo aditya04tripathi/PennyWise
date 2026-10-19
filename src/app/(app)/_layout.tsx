@@ -8,16 +8,28 @@ export default function AppLayout() {
 		<Stack
 			screenOptions={{
 				headerBackButtonDisplayMode: 'minimal',
+				headerBackTitle: 'Back',
+				headerLargeTitleEnabled: false,
+				headerLargeTitleShadowVisible: false,
+				headerLargeTitleStyle: { color: theme.colors.textPrimary },
 				headerTintColor: theme.colors.brandPrimary,
 				headerTitleStyle: { color: theme.colors.textPrimary },
 				headerStyle: { backgroundColor: theme.colors.background },
 				headerShadowVisible: false,
 				contentStyle: { backgroundColor: theme.colors.background },
 			}}>
-			<Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+			<Stack.Screen
+				name='(tabs)'
+				options={{ headerShown: false, title: 'Back' }}
+			/>
+			<Stack.Screen name='filters' options={{ title: 'Filters' }} />
 			<Stack.Screen
 				name='transaction/edit'
-				options={{ presentation: 'modal', title: 'Transaction' }}
+				options={{
+					presentation: 'modal',
+					title: 'Transaction',
+					headerLargeTitleEnabled: false,
+				}}
 			/>
 			<Stack.Screen
 				name='transaction/[id]'
@@ -30,12 +42,20 @@ export default function AppLayout() {
 			/>
 			<Stack.Screen
 				name='categories/edit'
-				options={{ presentation: 'modal', title: 'Category' }}
+				options={{
+					presentation: 'modal',
+					title: 'Category',
+					headerLargeTitleEnabled: false,
+				}}
 			/>
 			<Stack.Screen name='cards/index' options={{ title: 'Cards' }} />
 			<Stack.Screen
 				name='cards/edit'
-				options={{ presentation: 'modal', title: 'Card' }}
+				options={{
+					presentation: 'modal',
+					title: 'Card',
+					headerLargeTitleEnabled: false,
+				}}
 			/>
 			<Stack.Screen
 				name='accounts/index'
@@ -43,11 +63,19 @@ export default function AppLayout() {
 			/>
 			<Stack.Screen
 				name='accounts/edit'
-				options={{ presentation: 'modal', title: 'Account' }}
+				options={{
+					presentation: 'modal',
+					title: 'Account',
+					headerLargeTitleEnabled: false,
+				}}
 			/>
 			<Stack.Screen
 				name='accounts/transfer'
-				options={{ presentation: 'modal', title: 'Transfer' }}
+				options={{
+					presentation: 'modal',
+					title: 'Transfer',
+					headerLargeTitleEnabled: false,
+				}}
 			/>
 			<Stack.Screen
 				name='goals/index'
@@ -56,7 +84,11 @@ export default function AppLayout() {
 			<Stack.Screen name='goals/edit' options={{ title: 'Goal' }} />
 			<Stack.Screen
 				name='pro'
-				options={{ presentation: 'modal', title: 'PennyWise Pro' }}
+				options={{
+					presentation: 'modal',
+					title: 'PennyWise Pro',
+					headerLargeTitleEnabled: false,
+				}}
 			/>
 			<Stack.Screen
 				name='settings/profile'

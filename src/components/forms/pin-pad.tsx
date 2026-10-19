@@ -1,7 +1,8 @@
-import * as Haptics from 'expo-haptics';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
+import { PressableScale } from '@/components/ui/pressable-scale';
+import { selectionHaptic } from '@/components/ui/selection-haptic';
 import { AppText } from '@/components/ui/text';
 import { PIN_LENGTH } from '@/domain/security/pin';
 import { useTheme } from '@/theme/use-theme';
@@ -77,8 +78,7 @@ export function PinPad({
 	const theme = useTheme();
 	const press = (key: (typeof KEYS)[number]) => {
 		if (disabled) return;
-		if (process.env.EXPO_OS === 'ios')
-			Haptics.selectionAsync().catch(() => undefined);
+		selectionHaptic();
 		if (key === 'delete') onChange(value.slice(0, -1));
 		else if (key === 'biometric') onBiometric?.();
 		else if (value.length < PIN_LENGTH) onChange(value + key);
@@ -112,24 +112,23 @@ export function PinPad({
 					<View
 						key={key}
 						style={{ width: '33.33%', alignItems: 'center' }}>
-						<Pressable
+						<PressableScale
 							accessibilityRole='button'
 							accessibilityLabel={label}
 							disabled={disabled}
 							onPress={() => press(key)}
-							style={({ pressed }) => ({
+							contentStyle={{
 								width: 68,
 								height: 68,
 								borderRadius: 34,
 								alignItems: 'center',
 								justifyContent: 'center',
-								backgroundColor: pressed
-									? theme.colors.surfaceElevated
-									: key.length === 1
+								backgroundColor:
+									key.length === 1
 										? theme.colors.surface
 										: 'transparent',
 								opacity: disabled ? 0.4 : 1,
-							})}>
+							}}>
 							{key === 'delete' ? (
 								<Icon
 									name='chevronLeft'
@@ -147,7 +146,7 @@ export function PinPad({
 									{key}
 								</AppText>
 							)}
-						</Pressable>
+						</PressableScale>
 					</View>
 				);
 			})}

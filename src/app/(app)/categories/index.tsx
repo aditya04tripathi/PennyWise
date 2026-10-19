@@ -101,9 +101,13 @@ export default function CategoriesScreen() {
 					<Pressable
 						accessibilityRole='button'
 						accessibilityLabel={`Remove ${category.name}`}
-						hitSlop={8}
 						onPress={() => startRemoval(category)}
-						style={{ padding: theme.spacing.xs }}>
+						style={{
+							minWidth: theme.layout.minTouchTarget,
+							minHeight: theme.layout.minTouchTarget,
+							alignItems: 'center',
+							justifyContent: 'center',
+						}}>
 						<Icon
 							name='delete'
 							size={18}

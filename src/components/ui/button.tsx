@@ -1,14 +1,9 @@
-import * as Haptics from 'expo-haptics';
-import {
-	ActivityIndicator,
-	Pressable,
-	View,
-	type PressableProps,
-} from 'react-native';
+import { ActivityIndicator, View, type PressableProps } from 'react-native';
 
 import { useTheme } from '@/theme/use-theme';
 
 import { Icon, type IconName } from './icon';
+import { PressableScale } from './pressable-scale';
 import { AppText } from './text';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost';
@@ -39,46 +34,43 @@ export function Button({
 	const theme = useTheme();
 	const { colors } = theme;
 	const inactive = disabled || loading;
+	const minTarget = theme.layout.minTouchTarget;
+	const visualHeight = compact ? 36 : minTarget + 4;
+	const touchSlack = Math.max(0, Math.ceil((minTarget - visualHeight) / 2));
 	const palette = {
 		primary: {
 			background: colors.brandPrimary,
-			pressed: colors.brandPressed,
 			text: colors.textOnBrand,
 			border: colors.brandPrimary,
 		},
 		secondary: {
 			background: colors.surface,
-			pressed: colors.surfaceElevated,
 			text: colors.textPrimary,
 			border: colors.border,
 		},
 		destructive: {
 			background: colors.negativeSoft,
-			pressed: colors.negativeSoft,
 			text: colors.negative,
 			border: colors.negativeSoft,
 		},
 		ghost: {
 			background: 'transparent',
-			pressed: colors.surfaceElevated,
 			text: colors.brandPrimary,
 			border: 'transparent',
 		},
 	}[variant];
 
 	return (
-		<Pressable
+		<PressableScale
 			accessibilityRole='button'
 			accessibilityLabel={label}
 			accessibilityState={{ disabled: !!inactive, busy: !!loading }}
 			disabled={inactive}
-			onPress={(event) => {
-				if (process.env.EXPO_OS === 'ios')
-					Haptics.selectionAsync().catch(() => undefined);
-				onPress?.(event);
-			}}
-			style={({ pressed }) => ({
-				minHeight: compact ? 36 : theme.layout.minTouchTarget + 4,
+			hitSlop={touchSlack}
+			onPress={onPress}
+			style={{ alignSelf: fullWidth ? 'stretch' : 'flex-start' }}
+			contentStyle={{
+				minHeight: visualHeight,
 				paddingHorizontal: compact
 					? theme.spacing.sm
 					: theme.spacing.lg,
@@ -86,12 +78,11 @@ export function Button({
 				borderCurve: 'continuous',
 				borderWidth: 1,
 				borderColor: palette.border,
-				backgroundColor: pressed ? palette.pressed : palette.background,
+				backgroundColor: palette.background,
 				opacity: inactive ? 0.5 : 1,
-				alignSelf: fullWidth ? 'stretch' : 'auto',
 				alignItems: 'center',
 				justifyContent: 'center',
-			})}
+			}}
 			{...rest}>
 			<View
 				style={{
@@ -113,6 +104,6 @@ export function Button({
 					{label}
 				</AppText>
 			</View>
-		</Pressable>
+		</PressableScale>
 	);
 }

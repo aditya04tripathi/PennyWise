@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { Pressable } from 'react-native';
 
 import { useTheme } from '@/theme/use-theme';
 
+import { PressableScale } from './pressable-scale';
+import { selectionHaptic } from './selection-haptic';
 import { AppText } from './text';
 
 export function Chip({
@@ -18,12 +19,16 @@ export function Chip({
 }) {
 	const theme = useTheme();
 	return (
-		<Pressable
+		<PressableScale
 			accessibilityRole='radio'
 			accessibilityState={{ selected }}
 			accessibilityLabel={label}
-			onPress={onPress}
-			style={{
+			hitSlop={4}
+			onPress={() => {
+				selectionHaptic();
+				onPress();
+			}}
+			contentStyle={{
 				flexDirection: 'row',
 				alignItems: 'center',
 				gap: 6,
@@ -49,6 +54,6 @@ export function Chip({
 				}}>
 				{label}
 			</AppText>
-		</Pressable>
+		</PressableScale>
 	);
 }

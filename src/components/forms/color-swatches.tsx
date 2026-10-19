@@ -1,6 +1,8 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
+import { PressableScale } from '@/components/ui/pressable-scale';
+import { selectionHaptic } from '@/components/ui/selection-haptic';
 import { useTheme } from '@/theme/use-theme';
 
 export function ColorSwatches({
@@ -22,13 +24,16 @@ export function ColorSwatches({
 				gap: theme.spacing.xs,
 			}}>
 			{colors.map((option, index) => (
-				<Pressable
+				<PressableScale
 					key={option}
 					accessibilityRole='radio'
 					accessibilityLabel={`Colour ${index + 1}`}
 					accessibilityState={{ selected: value === option }}
-					onPress={() => onChange(option)}
-					style={{
+					onPress={() => {
+						selectionHaptic();
+						onChange(option);
+					}}
+					contentStyle={{
 						width: 44,
 						height: 44,
 						borderRadius: 22,
@@ -44,7 +49,7 @@ export function ColorSwatches({
 					{value === option ? (
 						<Icon name='check' size={16} color='#FFFFFF' />
 					) : null}
-				</Pressable>
+				</PressableScale>
 			))}
 		</View>
 	);

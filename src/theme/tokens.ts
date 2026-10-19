@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 export interface ColorTokens {
 	background: string;
 	surface: string;
@@ -83,7 +85,7 @@ export const radii = {
 
 export const layout = {
 	screenPadding: spacing.lg,
-	minTouchTarget: 44,
+	minTouchTarget: Platform.OS === 'android' ? 48 : 44,
 	rowHeight: 52,
 } as const;
 

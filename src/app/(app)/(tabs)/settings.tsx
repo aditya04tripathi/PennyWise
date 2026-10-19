@@ -1,3 +1,4 @@
+import { FreeBanner } from '@/components/ads/free-banner';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -10,11 +11,13 @@ import {
 import { CurrencyPicker } from '@/components/forms/currency-picker';
 import { ListRow } from '@/components/ui/list-row';
 import { Screen } from '@/components/ui/screen';
-import { Divider, Section, Surface } from '@/components/ui/surface';
 import { SegmentedControl } from '@/components/ui/segmented-control';
+import { Divider, Section, Surface } from '@/components/ui/surface';
 import { AppText } from '@/components/ui/text';
 import type { AppearancePreference } from '@/domain/entities';
 import { findCurrency } from '@/domain/money/currency';
+import { showAdPrivacyOptions } from '@/features/ads/ad-service';
+import { useIsPro } from '@/features/pro/pro-store';
 import { eraseAllLocalData } from '@/features/session/bootstrap';
 import { useSession } from '@/features/session/session-store';
 import {
@@ -22,7 +25,6 @@ import {
 	previewCurrencyChange,
 	updateSettings,
 } from '@/features/settings/settings-service';
-import { useIsPro } from '@/features/pro/pro-store';
 import { useMoneyFormatter, useSettings } from '@/hooks/use-app-data';
 
 export default function SettingsScreen() {
@@ -71,7 +73,7 @@ export default function SettingsScreen() {
 	};
 
 	return (
-		<Screen topInset title='Settings'>
+		<Screen topInset tabBarInset title='Settings' footer={<FreeBanner />}>
 			<Surface padded={false}>
 				<ListRow
 					icon='spark'
@@ -79,6 +81,24 @@ export default function SettingsScreen() {
 					value={isPro ? 'Unlocked' : undefined}
 					onPress={() => router.push('/pro')}
 				/>
+				{isPro ? null : (
+					<>
+						<Divider />
+						<ListRow
+							icon='shield'
+							title='Ad privacy choices'
+							subtitle='Ads are removed with PennyWise Pro'
+							onPress={() =>
+								showAdPrivacyOptions().catch(() =>
+									showMessage(
+										'No choices to change',
+										'Ad privacy choices are not required in your region.',
+									),
+								)
+							}
+						/>
+					</>
+				)}
 			</Surface>
 			<Section title='Profile'>
 				<Surface padded={false}>
@@ -148,9 +168,9 @@ export default function SettingsScreen() {
 					<SegmentedControl<AppearancePreference>
 						accessibilityLabel='Appearance'
 						value={settings.appearance}
-						onChange={(appearance) =>
-							updateSettings({ appearance })
-						}
+						onChange={(appearance) => {
+							updateSettings({ appearance });
+						}}
 						options={[
 							{ value: 'system', label: 'System' },
 							{ value: 'light', label: 'Light' },

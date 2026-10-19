@@ -1,11 +1,14 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
+import { FreeBanner } from '@/components/ads/free-banner';
 import { TransactionRow } from '@/components/finance/transaction-row';
 import { EmptyState, ErrorState } from '@/components/feedback/states';
 import { Button } from '@/components/ui/button';
-import { Icon } from '@/components/ui/icon';
+import { IconButton } from '@/components/ui/icon-button';
+import { PressableScale } from '@/components/ui/pressable-scale';
+import { selectionHaptic } from '@/components/ui/selection-haptic';
 import { Screen } from '@/components/ui/screen';
 import { Divider, Surface } from '@/components/ui/surface';
 import { AppText } from '@/components/ui/text';
@@ -82,7 +85,7 @@ export default function CalendarScreen() {
 	};
 
 	return (
-		<Screen topInset title='Calendar'>
+		<Screen topInset tabBarInset title='Calendar' footer={<FreeBanner />}>
 			<Surface style={{ gap: theme.spacing.sm }}>
 				<View
 					style={{
@@ -90,35 +93,25 @@ export default function CalendarScreen() {
 						alignItems: 'center',
 						justifyContent: 'space-between',
 					}}>
-					<Pressable
-						accessibilityRole='button'
-						accessibilityLabel='Previous month'
+					<IconButton
+						label='Previous month'
+						icon='chevronLeft'
+						iconSize={16}
+						color={theme.colors.textPrimary}
 						onPress={() => move(-1)}
-						hitSlop={10}
-						style={{ padding: theme.spacing.xs }}>
-						<Icon
-							name='chevronLeft'
-							size={16}
-							color={theme.colors.textPrimary}
-						/>
-					</Pressable>
+					/>
 					<AppText
 						variant='heading3'
 						accessibilityLiveRegion='polite'>
 						{formatMonth(cursor)}
 					</AppText>
-					<Pressable
-						accessibilityRole='button'
-						accessibilityLabel='Next month'
+					<IconButton
+						label='Next month'
+						icon='chevronRight'
+						iconSize={16}
+						color={theme.colors.textPrimary}
 						onPress={() => move(1)}
-						hitSlop={10}
-						style={{ padding: theme.spacing.xs }}>
-						<Icon
-							name='chevronRight'
-							size={16}
-							color={theme.colors.textPrimary}
-						/>
-					</Pressable>
+					/>
 				</View>
 				<View
 					style={{ flexDirection: 'row' }}
@@ -170,18 +163,22 @@ export default function CalendarScreen() {
 							.filter(Boolean)
 							.join(', ');
 						return (
-							<Pressable
+							<PressableScale
 								key={date}
 								accessibilityRole='button'
 								accessibilityState={{ selected: isSelected }}
 								accessibilityLabel={label}
 								accessibilityHint={WEEKDAY_NAMES[index % 7]}
-								onPress={() => setSelected(date)}
+								onPress={() => {
+									selectionHaptic();
+									setSelected(date);
+								}}
 								style={{
 									width: `${100 / 7}%`,
 									aspectRatio: 1,
 									padding: 2,
-								}}>
+								}}
+								contentStyle={{ flex: 1 }}>
 								<View
 									style={{
 										flex: 1,
@@ -245,7 +242,7 @@ export default function CalendarScreen() {
 										) : null}
 									</View>
 								</View>
-							</Pressable>
+							</PressableScale>
 						);
 					})}
 				</View>

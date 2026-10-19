@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
+import { FreeBanner } from '@/components/ads/free-banner';
 import { CategoryBreakdown } from '@/components/charts/category-breakdown';
 import { NetTrend } from '@/components/charts/net-trend';
 import { BudgetMeter } from '@/components/finance/budget-meter';
@@ -15,7 +16,7 @@ import {
 	ErrorState,
 	LoadingState,
 } from '@/components/feedback/states';
-import { Icon } from '@/components/ui/icon';
+import { IconButton } from '@/components/ui/icon-button';
 import { ListRow } from '@/components/ui/list-row';
 import { Screen } from '@/components/ui/screen';
 import { Divider, Section, Surface } from '@/components/ui/surface';
@@ -102,7 +103,7 @@ export default function PlanningScreen() {
 	);
 
 	return (
-		<Screen topInset title='Planning'>
+		<Screen topInset tabBarInset title='Planning' footer={<FreeBanner />}>
 			<View
 				style={{
 					flexDirection: 'row',
@@ -394,22 +395,14 @@ function MonthButton({
 }) {
 	const theme = useTheme();
 	return (
-		<Pressable
-			accessibilityRole='button'
-			accessibilityLabel={label}
-			accessibilityState={{ disabled: !!disabled }}
+		<IconButton
+			label={label}
+			icon={icon}
 			disabled={disabled}
+			iconSize={16}
+			color={theme.colors.textPrimary}
+			backgroundColor={theme.colors.surface}
 			onPress={onPress}
-			style={{
-				width: 44,
-				height: 44,
-				borderRadius: 22,
-				alignItems: 'center',
-				justifyContent: 'center',
-				backgroundColor: theme.colors.surface,
-				opacity: disabled ? 0.35 : 1,
-			}}>
-			<Icon name={icon} size={16} color={theme.colors.textPrimary} />
-		</Pressable>
+		/>
 	);
 }

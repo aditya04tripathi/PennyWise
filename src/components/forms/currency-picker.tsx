@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
 import { Sheet } from '@/components/ui/sheet';
@@ -54,47 +54,50 @@ export function CurrencyPicker({
 				placeholder='Code or name'
 				autoCorrect={false}
 			/>
-			<View>
-				{currencies.map((currency) => {
-					const active = currency.code === selected;
-					return (
-						<Pressable
-							key={currency.code}
-							accessibilityRole='radio'
-							accessibilityState={{ selected: active }}
-							accessibilityLabel={`${currency.name}, ${currency.code}`}
-							onPress={() => onSelect(currency.code)}
-							style={({ pressed }) => ({
-								flexDirection: 'row',
-								alignItems: 'center',
-								gap: theme.spacing.sm,
-								minHeight: theme.layout.rowHeight,
-								paddingHorizontal: theme.spacing.xs,
-								borderRadius: theme.radii.sm,
-								backgroundColor: pressed
-									? theme.colors.surfaceElevated
-									: 'transparent',
-							})}>
-							<AppText variant='label' style={{ width: 44 }}>
-								{currency.code}
-							</AppText>
-							<AppText
-								variant='body'
-								tone='textSecondary'
-								style={{ flex: 1 }}>
-								{currency.name}
-							</AppText>
-							{active ? (
-								<Icon
-									name='check'
-									size={16}
-									color={theme.colors.brandPrimary}
-								/>
-							) : null}
-						</Pressable>
-					);
-				})}
-			</View>
+			{currencies.map((currency) => {
+				const active = currency.code === selected;
+				return (
+					<Pressable
+						key={currency.code}
+						accessibilityRole='button'
+						accessibilityState={{ selected: active }}
+						accessibilityLabel={`${currency.name}, ${currency.code}`}
+						onPress={() => onSelect(currency.code)}
+						style={({ pressed }) => ({
+							flexDirection: 'row',
+							alignItems: 'center',
+							alignSelf: 'stretch',
+							gap: theme.spacing.sm,
+							minHeight: Math.max(
+								theme.layout.rowHeight,
+								theme.layout.minTouchTarget,
+							),
+							paddingHorizontal: theme.spacing.xs,
+							borderRadius: theme.radii.sm,
+							backgroundColor: pressed
+								? theme.colors.surfaceElevated
+								: 'transparent',
+						})}>
+						<AppText variant='label' style={{ width: 48 }}>
+							{currency.code}
+						</AppText>
+						<AppText
+							variant='body'
+							tone='textSecondary'
+							numberOfLines={2}
+							style={{ flex: 1, flexShrink: 1 }}>
+							{currency.name}
+						</AppText>
+						{active ? (
+							<Icon
+								name='check'
+								size={16}
+								color={theme.colors.brandPrimary}
+							/>
+						) : null}
+					</Pressable>
+				);
+			})}
 		</Sheet>
 	);
 }

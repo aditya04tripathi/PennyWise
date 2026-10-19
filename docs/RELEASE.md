@@ -24,8 +24,12 @@ npx expo run:android --variant release
 
 ## PennyWise Pro (RevenueCat)
 
-1. Create a non-consumable product in App Store Connect and in the Google Play Console.
-2. In RevenueCat, add both apps, attach the products to an entitlement called `pro`, and put them in the current offering, ideally as the Lifetime package.
-3. Copy `.env.example` to `.env` (or set EAS environment variables) and fill in `EXPO_PUBLIC_REVENUECAT_IOS_KEY` and `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`.
-4. Rebuild the native app. Expo Go cannot make purchases. Without keys, the Pro screen says purchases are not set up, and nothing is unlocked.
-5. Test with a sandbox account: buy, restore, a refund that removes Pro, and offline launch (the cached Pro status should still apply).
+1. In App Store Connect and Google Play, create three products: a non-consumable `lifetime`, and auto-renewing subscriptions `yearly` and `monthly`.
+2. In RevenueCat, attach all three to the entitlement `penny_wise_pro`. Put them in the current offering as packages whose identifiers are exactly `lifetime`, `yearly` and `monthly`. Design a paywall for that offering, and turn on Customer Center.
+3. Copy `.env.example` to `.env` and fill in the public SDK keys. The Test Store key works for both platforms. Restart Metro after changing `.env`.
+4. Rebuild the native app. Expo Go cannot show the paywall. Without keys, the Pro screen says purchases are not set up.
+5. Test with a sandbox account: buy each plan from the paywall, restore, cancel or refund (Pro should drop when the entitlement ends), manage the subscription in Customer Center, and launch offline (the cached Pro status should still apply).
+
+## Ads
+
+The native project currently uses Google's sample AdMob app IDs, so a development build shows test ads. Before a store release, replace `androidAppId` and `iosAppId` in `app.json` with the app's own AdMob app IDs and rebuild. Set `EXPO_PUBLIC_ADMOB_IOS_BANNER_UNIT_ID` and `EXPO_PUBLIC_ADMOB_ANDROID_BANNER_UNIT_ID` for the release banner units. A release build with those variables empty shows no ad. Confirm that buying Pro removes the banner and that a fresh Pro install never initialises the ad SDK.

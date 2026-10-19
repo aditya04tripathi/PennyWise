@@ -10,14 +10,15 @@ export default function AboutScreen() {
 	const theme = useTheme();
 	const encrypted = useSession((state) => state.encrypted);
 	const points = [
-		'Your financial data is stored only on this device. PennyWise has no servers and no account.',
+		'Your transactions, accounts and receipts stay on this device. PennyWise has no account and does not upload that data to its own servers.',
 		encrypted
 			? 'The database is encrypted with SQLCipher. Its key is generated on this device and kept in the system keychain, available only while the device is unlocked.'
 			: 'This is a development build running without database encryption. Release builds refuse to store data unencrypted.',
 		'Your PIN is never stored. Only a salted, slow hash is kept in the keychain, and repeated wrong attempts pause entry.',
 		'Backups are encrypted with AES-256-GCM using a key derived from your password. CSV exports are not encrypted.',
 		'Card entries store only the issuer, a label and the last four digits. PennyWise never asks for full card numbers or security codes.',
-		'PennyWise contains no analytics, advertising or tracking SDKs and makes no network requests with your data.',
+		'The free version shows ads from Google. PennyWise Pro removes them. PennyWise does not include an analytics SDK.',
+		'Pro purchases are handled by the App Store or Google Play. RevenueCat receives an anonymous ID and the purchase receipt so PennyWise can tell whether Pro is unlocked. Your transactions are not included.',
 	];
 	return (
 		<Screen>

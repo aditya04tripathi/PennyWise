@@ -1,5 +1,6 @@
+import { Host, Switch } from '@expo/ui';
 import type { ReactNode } from 'react';
-import { Pressable, Switch, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/theme/use-theme';
 
@@ -51,10 +52,9 @@ export function ListRow({
 			{icon ? (
 				<View
 					style={{
-						width: 32,
-						height: 32,
+						width: 36,
+						height: 36,
 						borderRadius: theme.radii.sm,
-						borderCurve: 'continuous',
 						backgroundColor: destructive
 							? theme.colors.negativeSoft
 							: theme.colors.brandSoft,
@@ -73,7 +73,7 @@ export function ListRow({
 					/>
 				</View>
 			) : null}
-			<View style={{ flex: 1, gap: 2 }}>
+			<View style={{ flex: 1, minWidth: 72, gap: 2 }}>
 				<AppText
 					variant='body'
 					style={{ color: titleColor, fontWeight: '500' }}>
@@ -89,23 +89,32 @@ export function ListRow({
 				<AppText
 					variant='body'
 					tone='textSecondary'
-					numberOfLines={1}
-					style={{ maxWidth: '45%' }}>
+					numberOfLines={3}
+					style={{ flexShrink: 1, textAlign: 'right' }}>
 					{value}
 				</AppText>
 			) : null}
 			{trailing}
 			{toggle ? (
-				<Switch
-					value={toggle.value}
-					onValueChange={toggle.onChange}
-					disabled={toggle.disabled}
-					trackColor={{
-						true: theme.colors.brandPrimary,
-						false: theme.colors.border,
-					}}
+				<View
+					accessible
+					accessibilityRole='switch'
 					accessibilityLabel={title}
-				/>
+					accessibilityState={{
+						checked: toggle.value,
+						disabled: !!toggle.disabled,
+					}}>
+					<Host
+						matchContents
+						colorScheme={theme.dark ? 'dark' : 'light'}
+						seedColor={theme.colors.brandPrimary}>
+						<Switch
+							value={toggle.value}
+							onValueChange={toggle.onChange}
+							disabled={toggle.disabled}
+						/>
+					</Host>
+				</View>
 			) : null}
 			{onPress && !toggle ? (
 				<Icon

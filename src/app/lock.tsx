@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { confirmAction } from '@/components/feedback/confirm';
 import { PinDots, PinPad } from '@/components/forms/pin-pad';
@@ -26,6 +26,7 @@ function formatWait(ms: number): string {
 
 export default function LockScreen() {
 	const theme = useTheme();
+	const insets = useSafeAreaInsets();
 	const security = useSession((state) => state.security);
 	const unlock = useSession((state) => state.unlock);
 	const [pin, setPin] = useState('');
@@ -97,8 +98,13 @@ export default function LockScreen() {
 		: message;
 
 	return (
-		<SafeAreaView
-			style={{ flex: 1, backgroundColor: theme.colors.background }}>
+		<View
+			style={{
+				flex: 1,
+				backgroundColor: theme.colors.background,
+				paddingTop: insets.top,
+				paddingBottom: insets.bottom,
+			}}>
 			<View
 				style={{
 					flex: 1,
@@ -119,6 +125,7 @@ export default function LockScreen() {
 						variant='body'
 						tone={status ? 'negative' : 'textSecondary'}
 						align='center'
+						selectable
 						accessibilityLiveRegion='assertive'>
 						{status ?? 'PennyWise is locked'}
 					</AppText>
@@ -163,6 +170,6 @@ export default function LockScreen() {
 					}}
 				/>
 			</View>
-		</SafeAreaView>
+		</View>
 	);
 }

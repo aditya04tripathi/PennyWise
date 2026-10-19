@@ -1,27 +1,20 @@
 import { router } from 'expo-router';
-import {
-	useCallback,
-	useEffect,
-	useMemo,
-	useState,
-	type ReactNode,
-} from 'react';
-import { Pressable, SectionList, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { SectionList, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CategoryBadge } from '@/components/finance/category-badge';
-import { TransactionRow } from '@/components/finance/transaction-row';
+import { FreeBanner } from '@/components/ads/free-banner';
 import { showMessage, userFacingError } from '@/components/feedback/confirm';
 import {
 	EmptyState,
 	ErrorState,
 	LoadingState,
 } from '@/components/feedback/states';
+import { TransactionRow } from '@/components/finance/transaction-row';
 import { Button } from '@/components/ui/button';
-import { Icon } from '@/components/ui/icon';
-import { Chip } from '@/components/ui/chip';
+import { IconButton } from '@/components/ui/icon-button';
 import { SegmentedControl } from '@/components/ui/segmented-control';
-import { Sheet } from '@/components/ui/sheet';
+import { useTabBarInset } from '@/components/ui/tab-bar-inset';
 import { AppText } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import {
@@ -31,27 +24,21 @@ import {
 import { localDateOf, toLocalDateTime } from '@/domain/dates';
 import type { Transaction, TransactionType } from '@/domain/entities';
 import { addMinor } from '@/domain/money/money';
-import { exportTransactionsCsv } from '@/features/backup/backup-service';
 import {
-	useAccounts,
-	useCards,
-	useCategories,
-	useMoneyFormatter,
-} from '@/hooks/use-app-data';
+	activityFilterCount,
+	receiptQuery,
+	SORT_LABELS,
+	useActivityFilters,
+	type ActivitySort,
+} from '@/features/activity/activity-filters';
+import { exportTransactionsCsv } from '@/features/backup/backup-service';
+import { useCategories, useMoneyFormatter } from '@/hooks/use-app-data';
 import { useLedgerQuery } from '@/hooks/use-ledger-query';
 import { formatDayHeading } from '@/lib/format-date';
 import { useTheme } from '@/theme/use-theme';
 
 const PAGE_SIZE = 50;
 type TypeFilter = 'all' | TransactionType;
-type Sort = NonNullable<TransactionQuery['sort']>;
-
-const SORT_LABELS: Record<Sort, string> = {
-	'date-desc': 'Newest first',
-	'date-asc': 'Oldest first',
-	'amount-desc': 'Largest amount',
-	'amount-asc': 'Smallest amount',
-};
 
 function useDebounced<T>(value: T, delay: number): T {
 	const [debounced, setDebounced] = useState(value);
@@ -65,19 +52,13 @@ function useDebounced<T>(value: T, delay: number): T {
 export default function ActivityScreen() {
 	const theme = useTheme();
 	const insets = useSafeAreaInsets();
+	const tabInset = useTabBarInset();
 	const formatAmount = useMoneyFormatter();
-	const { categories, byId: categoryById } = useCategories(true);
-	const { cards } = useCards();
-	const { accounts } = useAccounts();
+	const { byId: categoryById } = useCategories(true);
+	const activityFilters = useActivityFilters();
 	const [search, setSearch] = useState('');
 	const [type, setType] = useState<TypeFilter>('all');
-	const [categoryId, setCategoryId] = useState<string | null>(null);
-	const [cardId, setCardId] = useState<string | null>(null);
-	const [accountId, setAccountId] = useState<string | null>(null);
-	const [hasReceipt, setHasReceipt] = useState<boolean | null>(null);
-	const [sort, setSort] = useState<Sort>('date-desc');
 	const [paging, setPaging] = useState({ key: '', pages: 1 });
-	const [filtersOpen, setFiltersOpen] = useState(false);
 	const [exporting, setExporting] = useState(false);
 	const debouncedSearch = useDebounced(search, 250);
 
@@ -85,21 +66,13 @@ export default function ActivityScreen() {
 		() => ({
 			search: debouncedSearch,
 			type: type === 'all' ? null : type,
-			categoryId,
-			cardId,
-			accountId,
-			hasReceipt,
-			sort,
+			categoryId: activityFilters.categoryId || null,
+			cardId: activityFilters.cardId || null,
+			accountId: activityFilters.accountId || null,
+			hasReceipt: receiptQuery(activityFilters.receipt),
+			sort: activityFilters.sort,
 		}),
-		[
-			debouncedSearch,
-			type,
-			categoryId,
-			cardId,
-			accountId,
-			hasReceipt,
-			sort,
-		],
+		[debouncedSearch, type, activityFilters],
 	);
 
 	const filterKey = JSON.stringify(filters);
@@ -122,14 +95,11 @@ export default function ActivityScreen() {
 	);
 
 	const sections = useMemo(
-		() => groupByDay(result.data?.rows ?? [], sort),
-		[result.data, sort],
+		() => groupByDay(result.data?.rows ?? [], activityFilters.sort),
+		[result.data, activityFilters.sort],
 	);
 	const now = toLocalDateTime(new Date());
-	const activeFilters =
-		[categoryId, cardId, accountId, hasReceipt].filter(
-			(value) => value !== null,
-		).length + (sort === 'date-desc' ? 0 : 1);
+	const activeFilters = activityFilterCount(activityFilters);
 	const openDetail = useCallback(
 		(tx: Transaction) => router.push(`/transaction/${tx.id}`),
 		[],
@@ -152,16 +122,23 @@ export default function ActivityScreen() {
 	};
 
 	return (
-		<View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+		<View
+			style={{
+				flex: 1,
+				paddingTop: insets.top,
+				backgroundColor: theme.colors.background,
+			}}>
 			<SectionList
+				style={{ flex: 1 }}
 				sections={sections}
 				keyExtractor={(item) => item.id}
 				stickySectionHeadersEnabled={false}
+				contentInsetAdjustmentBehavior='never'
 				keyboardDismissMode='on-drag'
 				keyboardShouldPersistTaps='handled'
 				contentContainerStyle={{
-					paddingTop: insets.top + theme.spacing.sm,
-					paddingBottom: theme.spacing.huge + insets.bottom,
+					paddingTop: theme.spacing.sm,
+					paddingBottom: theme.spacing.md,
 				}}
 				ListHeaderComponent={
 					<View
@@ -181,24 +158,14 @@ export default function ActivityScreen() {
 								accessibilityRole='header'>
 								Activity
 							</AppText>
-							<Pressable
-								accessibilityRole='button'
-								accessibilityLabel='Add transaction'
+							<IconButton
+								label='Add transaction'
+								icon='add'
+								iconSize={20}
+								color={theme.colors.textOnBrand}
+								backgroundColor={theme.colors.brandPrimary}
 								onPress={() => router.push('/transaction/edit')}
-								style={{
-									width: 44,
-									height: 44,
-									borderRadius: 22,
-									alignItems: 'center',
-									justifyContent: 'center',
-									backgroundColor: theme.colors.brandPrimary,
-								}}>
-								<Icon
-									name='add'
-									size={20}
-									color={theme.colors.textOnBrand}
-								/>
-							</Pressable>
+							/>
 						</View>
 						<TextField
 							label='Search'
@@ -233,7 +200,7 @@ export default function ActivityScreen() {
 								icon='filter'
 								variant='secondary'
 								compact
-								onPress={() => setFiltersOpen(true)}
+								onPress={() => router.push('/filters')}
 							/>
 							<Button
 								label='Export CSV'
@@ -301,8 +268,6 @@ export default function ActivityScreen() {
 							icon='activity'
 							title='No transactions yet'
 							message='Everything you record appears here, grouped by day.'
-							actionLabel='Add transaction'
-							onAction={() => router.push('/transaction/edit')}
 						/>
 					)
 				}
@@ -317,114 +282,8 @@ export default function ActivityScreen() {
 				}
 			/>
 
-			<Sheet
-				visible={filtersOpen}
-				title='Filters'
-				onClose={() => setFiltersOpen(false)}
-				footer={
-					<>
-						<Button
-							label='Show results'
-							onPress={() => setFiltersOpen(false)}
-							fullWidth
-						/>
-						<Button
-							label='Clear filters'
-							variant='ghost'
-							onPress={() => {
-								setCategoryId(null);
-								setCardId(null);
-								setAccountId(null);
-								setHasReceipt(null);
-								setSort('date-desc');
-							}}
-						/>
-					</>
-				}>
-				<FilterGroup title='Sort'>
-					{(Object.keys(SORT_LABELS) as Sort[]).map((option) => (
-						<Chip
-							key={option}
-							label={SORT_LABELS[option]}
-							selected={sort === option}
-							onPress={() => setSort(option)}
-						/>
-					))}
-				</FilterGroup>
-				<FilterGroup title='Category'>
-					<Chip
-						label='Any'
-						selected={categoryId === null}
-						onPress={() => setCategoryId(null)}
-					/>
-					{categories.map((category) => (
-						<Chip
-							key={category.id}
-							label={
-								category.archivedAt
-									? `${category.name} (archived)`
-									: category.name
-							}
-							selected={categoryId === category.id}
-							onPress={() => setCategoryId(category.id)}
-							leading={
-								<CategoryBadge category={category} size={20} />
-							}
-						/>
-					))}
-				</FilterGroup>
-				{accounts.length > 1 ? (
-					<FilterGroup title='Account'>
-						<Chip
-							label='Any'
-							selected={accountId === null}
-							onPress={() => setAccountId(null)}
-						/>
-						{accounts.map(({ account }) => (
-							<Chip
-								key={account.id}
-								label={account.name}
-								selected={accountId === account.id}
-								onPress={() => setAccountId(account.id)}
-							/>
-						))}
-					</FilterGroup>
-				) : null}
-				{cards.length > 0 ? (
-					<FilterGroup title='Card'>
-						<Chip
-							label='Any'
-							selected={cardId === null}
-							onPress={() => setCardId(null)}
-						/>
-						{cards.map((card) => (
-							<Chip
-								key={card.id}
-								label={`${card.bankName} ·${card.lastFour}`}
-								selected={cardId === card.id}
-								onPress={() => setCardId(card.id)}
-							/>
-						))}
-					</FilterGroup>
-				) : null}
-				<FilterGroup title='Receipt'>
-					<Chip
-						label='Any'
-						selected={hasReceipt === null}
-						onPress={() => setHasReceipt(null)}
-					/>
-					<Chip
-						label='With receipt'
-						selected={hasReceipt === true}
-						onPress={() => setHasReceipt(true)}
-					/>
-					<Chip
-						label='Without receipt'
-						selected={hasReceipt === false}
-						onPress={() => setHasReceipt(false)}
-					/>
-				</FilterGroup>
-			</Sheet>
+			<FreeBanner />
+			<View style={{ height: tabInset }} />
 		</View>
 	);
 }
@@ -435,7 +294,10 @@ interface DaySection {
 	data: Transaction[];
 }
 
-function groupByDay(rows: readonly Transaction[], sort: Sort): DaySection[] {
+function groupByDay(
+	rows: readonly Transaction[],
+	sort: ActivitySort,
+): DaySection[] {
 	if (sort.startsWith('amount'))
 		return rows.length
 			? [{ title: SORT_LABELS[sort], netMinor: null, data: [...rows] }]
@@ -456,29 +318,4 @@ function groupByDay(rows: readonly Transaction[], sort: Sort): DaySection[] {
 		);
 	}
 	return sections;
-}
-
-function FilterGroup({
-	title,
-	children,
-}: {
-	title: string;
-	children: ReactNode;
-}) {
-	const theme = useTheme();
-	return (
-		<View style={{ gap: theme.spacing.xs }}>
-			<AppText variant='label' tone='textSecondary'>
-				{title}
-			</AppText>
-			<View
-				style={{
-					flexDirection: 'row',
-					flexWrap: 'wrap',
-					gap: theme.spacing.xs,
-				}}>
-				{children}
-			</View>
-		</View>
-	);
 }

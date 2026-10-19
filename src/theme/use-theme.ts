@@ -2,6 +2,8 @@ import { useColorScheme } from 'react-native';
 
 import { useSession } from '@/features/session/session-store';
 
+import { cachedAppearance } from './native-appearance';
+
 import {
 	darkColors,
 	lightColors,
@@ -44,9 +46,8 @@ const darkTheme: Theme = {
 
 export function useTheme(): Theme {
 	const system = useColorScheme();
-	const preference = useSession(
-		(state) => state.settings?.appearance ?? 'system',
-	);
+	const stored = useSession((state) => state.settings?.appearance ?? null);
+	const preference = stored ?? cachedAppearance ?? 'system';
 	const dark =
 		preference === 'system' ? system === 'dark' : preference === 'dark';
 	return dark ? darkTheme : lightTheme;

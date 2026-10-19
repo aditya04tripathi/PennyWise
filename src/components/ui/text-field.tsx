@@ -47,6 +47,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(
 					<AppText
 						variant='bodySmall'
 						tone='negative'
+						selectable
 						accessibilityLiveRegion='polite'
 						accessibilityRole='alert'>
 						{error}

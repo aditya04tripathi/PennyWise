@@ -2,13 +2,13 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { CategoryBadge } from '@/components/finance/category-badge';
 import { showMessage, userFacingError } from '@/components/feedback/confirm';
 import {
 	EmptyState,
 	ErrorState,
 	LoadingState,
 } from '@/components/feedback/states';
+import { CategoryBadge } from '@/components/finance/category-badge';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Divider, Section, Surface } from '@/components/ui/surface';
@@ -63,8 +63,6 @@ export default function RecurringScreen() {
 					icon='recurring'
 					title='Nothing repeats yet'
 					message='When you add a transaction, choose how often it repeats. Due payments appear here for you to confirm.'
-					actionLabel='Add transaction'
-					onAction={() => router.push('/transaction/edit')}
 				/>
 			) : null}
 			{due.length > 0 ? (

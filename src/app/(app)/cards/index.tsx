@@ -1,7 +1,6 @@
 import { router, Stack } from 'expo-router';
 import { Pressable } from 'react-native';
 
-import { CardTile } from '@/components/finance/card-tile';
 import {
 	confirmAction,
 	showMessage,
@@ -12,6 +11,7 @@ import {
 	ErrorState,
 	LoadingState,
 } from '@/components/feedback/states';
+import { CardTile } from '@/components/finance/card-tile';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { AppText } from '@/components/ui/text';
@@ -67,8 +67,6 @@ export default function CardsScreen() {
 						icon='card'
 						title='No cards'
 						message='Add the cards you pay with to see which one each transaction used. Only the last four digits are stored.'
-						actionLabel='Add card'
-						onAction={() => router.push('/cards/edit')}
 					/>
 				) : null}
 				{query.cards.map((card) => (

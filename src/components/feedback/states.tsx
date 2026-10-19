@@ -81,7 +81,7 @@ export function ErrorState({
 			}}
 			accessibilityRole='alert'>
 			<Icon name='warning' size={24} color={theme.colors.warning} />
-			<AppText variant='body' align='center'>
+			<AppText variant='body' align='center' selectable>
 				{message}
 			</AppText>
 			{onRetry ? (

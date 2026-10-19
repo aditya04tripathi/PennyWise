@@ -110,6 +110,7 @@ export default function TransactionDetailScreen() {
 					<AppText
 						variant='display'
 						numeric
+						selectable
 						tone={income ? 'positive' : 'textPrimary'}
 						align='center'>
 						{formatAmount(
@@ -119,7 +120,7 @@ export default function TransactionDetailScreen() {
 							{ signDisplay: 'always' },
 						)}
 					</AppText>
-					<AppText variant='heading3' align='center'>
+					<AppText variant='heading3' align='center' selectable>
 						{transaction.note}
 					</AppText>
 					{scheduled ? (

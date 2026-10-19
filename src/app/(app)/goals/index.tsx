@@ -5,8 +5,8 @@ import {
 	ErrorState,
 	LoadingState,
 } from '@/components/feedback/states';
-import { Button } from '@/components/ui/button';
 import { GoalCard } from '@/components/finance/goal-card';
+import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { useIsPro } from '@/features/pro/pro-store';
 import { useGoals } from '@/hooks/use-app-data';
@@ -43,8 +43,6 @@ export default function GoalsScreen() {
 						icon='goal'
 						title='No savings goals'
 						message='Set a target and record what you put aside. Goal contributions are tracked separately and do not change your balance.'
-						actionLabel='Add goal'
-						onAction={openEditor}
 					/>
 				) : null}
 				{query.goals.map((progress) => (

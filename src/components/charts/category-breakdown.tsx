@@ -60,7 +60,8 @@ export function CategoryBreakdown({
 									variant='bodySmall'
 									numeric
 									tone='textSecondary'>
-									{formatAmount(item.totalMinor)} · {share}%
+									{formatAmount(item.totalMinor)} ·{' '}
+									{share.toFixed(2)}%
 								</AppText>
 							</View>
 							<View

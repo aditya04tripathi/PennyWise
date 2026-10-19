@@ -4,6 +4,7 @@ import { AppText } from '@/components/ui/text';
 import type { DailyNet } from '@/domain/calculations/trends';
 import { sumMinor } from '@/domain/money/money';
 import type { MoneyFormatter } from '@/hooks/use-app-data';
+import { countLabel } from '@/lib/count-label';
 import { formatShortDate } from '@/lib/format-date';
 import { useTheme } from '@/theme/use-theme';
 
@@ -23,7 +24,7 @@ export function NetTrend({
 	const net = sumMinor(series.map((day) => day.netMinor));
 	const first = series[0];
 	const last = series[series.length - 1];
-	const summary = `Net ${formatAmount(net, { signDisplay: 'exceptZero' })} over ${series.length} days. ${positives} days with net income, ${negatives} days with net spending.`;
+	const summary = `Net ${formatAmount(net, { signDisplay: 'exceptZero' })} over ${countLabel(series.length, 'day')}. ${countLabel(positives, 'day')} with net income, ${countLabel(negatives, 'day')} with net spending.`;
 
 	return (
 		<View style={{ gap: theme.spacing.xs }}>

@@ -25,11 +25,16 @@ export function wrapExpoDatabase(database: SQLite.SQLiteDatabase): SqlDatabase {
 	return {
 		...wrapExecutor(database),
 		async transaction(work) {
-			let result: Awaited<ReturnType<typeof work>> | undefined;
-			await database.withExclusiveTransactionAsync(async (txn) => {
-				result = await work(wrapExecutor(txn));
-			});
-			return result as Awaited<ReturnType<typeof work>>;
+			const executor = wrapExecutor(database);
+			try {
+				await database.execAsync('BEGIN IMMEDIATE');
+				const result = await work(executor);
+				await database.execAsync('COMMIT');
+				return result;
+			} catch (error) {
+				await database.execAsync('ROLLBACK').catch(() => undefined);
+				throw error;
+			}
 		},
 		close: () => database.closeAsync(),
 	};

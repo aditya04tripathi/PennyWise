@@ -177,16 +177,45 @@ export class NewerSchemaError extends Error {
 	}
 }
 
+const REBUILD_BROKEN_SCHEMA = `
+  PRAGMA foreign_keys = OFF;
+  DROP TABLE IF EXISTS goal_contributions;
+  DROP TABLE IF EXISTS savings_goals;
+  DROP TABLE IF EXISTS transfers;
+  DROP TABLE IF EXISTS category_budget_alert_log;
+  DROP TABLE IF EXISTS budget_alert_log;
+  DROP TABLE IF EXISTS import_batches;
+  DROP TABLE IF EXISTS transactions;
+  DROP TABLE IF EXISTS payment_cards;
+  DROP TABLE IF EXISTS categories;
+  DROP TABLE IF EXISTS accounts;
+  DROP TABLE IF EXISTS settings;
+  PRAGMA user_version = 0;
+`;
+
 export async function migrateDatabase(
 	database: SqlDatabase,
 	migrations: readonly Migration[] = MIGRATIONS,
 ): Promise<number> {
-	await database.exec('PRAGMA foreign_keys = ON;');
+	await database.exec('PRAGMA foreign_keys = OFF;');
 	const row = await database.get<{ user_version: number }>(
 		'PRAGMA user_version;',
 	);
 	let current = row?.user_version ?? 0;
 	const latest = migrations[migrations.length - 1]?.version ?? 0;
+	const settings = await database.get<{ name: string }>(
+		"SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'settings'",
+	);
+	if (current > 0 && current <= latest && !settings) {
+		console.log(
+			'[pennywise] schema version',
+			current,
+			'has no settings table, rebuilding',
+		);
+		await database.exec(REBUILD_BROKEN_SCHEMA);
+		current = 0;
+	}
+	await database.exec('PRAGMA foreign_keys = ON;');
 	if (current > latest) throw new NewerSchemaError(current);
 
 	for (const migration of migrations) {
@@ -199,6 +228,13 @@ export async function migrateDatabase(
 				);
 			});
 		} catch (error) {
+			const detail =
+				error instanceof Error ? error.message : String(error);
+			console.log(
+				'[pennywise] migration sql failed',
+				migration.version,
+				detail,
+			);
 			throw new SchemaMigrationError(migration.version, error);
 		}
 		current = migration.version;
